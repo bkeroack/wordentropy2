@@ -27,16 +27,17 @@ var GRAMMAR_RULES = map[string][]string{
 func LoadWordMap() map[string][]string {
 
 	word_map := map[string][]string{
-		"snoun":       make([]string, 1),
-		"pnoun":       make([]string, 1),
-		"verb":        make([]string, 1),
-		"adjective":   make([]string, 1),
-		"adverb":      make([]string, 1),
-		"preposition": make([]string, 1),
-		"pronoun":     make([]string, 1),
-		"conjunction": make([]string, 1),
-		"sarticle":    make([]string, 1),
-		"particle":    make([]string, 1),
+		"snoun":        make([]string, 1),
+		"pnoun":        make([]string, 1),
+		"verb":         make([]string, 1),
+		"adjective":    make([]string, 1),
+		"adverb":       make([]string, 1),
+		"preposition":  make([]string, 1),
+		"pronoun":      make([]string, 1),
+		"conjunction":  make([]string, 1),
+		"sarticle":     make([]string, 1),
+		"particle":     make([]string, 1),
+		"interjection": make([]string, 1),
 	}
 
 	file, err := os.Open(WORDNET_PATH)
@@ -82,15 +83,20 @@ func LoadWordMap() map[string][]string {
 			word_type = "adverb"
 		} else if strings.Contains(pos_tag, "C") {
 			word_type = "conjunction"
-		} else if strings.Contains(pos_tag, "P") {
+		} else if strings.Contains(pos_tag, "p") || strings.Contains(pos_tag, "P") {
 			word_type = "preposition"
 		} else if strings.Contains(pos_tag, "r") {
 			word_type = "pronoun"
+		} else if strings.Contains(pos_tag, "!") {
+			word_type = "interjection"
 		} else {
 			log.Printf("Unknown word type! word: %v; pos: %v\n", word, pos_tag)
 			continue
 		}
 		word_map[word_type] = append(word_map[word_type], word)
+	}
+	for k, v := range word_map {
+		log.Printf("Word type: %v; count: %v", k, len(v))
 	}
 	return word_map
 }
