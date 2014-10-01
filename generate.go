@@ -11,16 +11,17 @@ var WORDNET_PATH = "part-of-speech.txt"
 
 // word_type -> "can be followed by..."
 var GRAMMAR_RULES = map[string][]string{
-	"snoun":       []string{"adverb", "verb", "pronoun", "conjunction"},
-	"pnoun":       []string{"adverb", "verb", "pronoun", "conjunction"},
-	"verb":        []string{"snoun", "pnoun", "preposition", "adjective", "conjunction", "sarticle", "particle"},
-	"adjective":   []string{"snoun", "pnoun"},
-	"adverb":      []string{"verb"},
-	"preposition": []string{"snoun", "pnoun", "adverb", "adjective", "verb"},
-	"pronoun":     []string{"verb", "adverb", "conjunction"},
-	"conjunction": []string{"snoun", "pnoun", "pronoun", "verb", "sarticle", "particle"},
-	"sarticle":    []string{"snoun", "adjective"},
-	"particle":    []string{"pnoun", "adjective"},
+	"snoun":        []string{"adverb", "verb", "pronoun", "conjunction"},
+	"pnoun":        []string{"adverb", "verb", "pronoun", "conjunction"},
+	"verb":         []string{"snoun", "pnoun", "preposition", "adjective", "conjunction", "sarticle", "particle"},
+	"adjective":    []string{"snoun", "pnoun"},
+	"adverb":       []string{"verb"},
+	"preposition":  []string{"snoun", "pnoun", "adverb", "adjective", "verb"},
+	"pronoun":      []string{"verb", "adverb", "conjunction"},
+	"conjunction":  []string{"snoun", "pnoun", "pronoun", "verb", "sarticle", "particle"},
+	"sarticle":     []string{"snoun", "adjective"},
+	"particle":     []string{"pnoun", "adjective"},
+	"interjection": []string{"snoun", "pnoun", "preposition", "adjective", "conjunction", "sarticle", "particle"},
 }
 
 //Load Wordnet into a mapping of word type to words of that type
