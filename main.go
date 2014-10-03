@@ -48,8 +48,11 @@ func Root(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	log.Printf("count: %v\n", count)
-	log.Printf("length: %v\n", length)
+	passphrases := GeneratePassphrases(word_map, count, length)
+
+	for i, val := range passphrases {
+		log.Printf("phrase: %v\n", val)
+	}
 
 	compiler := amber.New()
 	err := compiler.ParseFile("views/main.amber")
