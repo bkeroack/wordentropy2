@@ -47,9 +47,15 @@ func generate_fragment(word_map map[string][]string, fragment_length int) []stri
 	fragment_slice := make([]string, fragment_length)
 	prev_type_index := rand.Int31n(int32(len(word_types) - 1))             // Random initial word type
 	fragment_slice[0] = random_word(word_map, word_types[prev_type_index]) // Random initial word
-	for i := 1; i <= fragment_length; i++ {
+	this_word_type := ""
+	for i := 1; i < fragment_length; i++ {
 		// Get random allowed word type by type of the previous word
-		this_word_type := GRAMMAR_RULES[word_types[prev_type_index]][rand.Int31n(int32(len(GRAMMAR_RULES[word_types[prev_type_index]])-1))]
+		next_word_type_count := int32(len(GRAMMAR_RULES[word_types[prev_type_index]]) - 1)
+		if next_word_type_count > 0 { //rand.Int31n cannot take zero as a param
+			this_word_type = GRAMMAR_RULES[word_types[prev_type_index]][rand.Int31n(next_word_type_count)]
+		} else {
+			this_word_type = GRAMMAR_RULES[word_types[prev_type_index]][0]
+		}
 		fragment_slice[i] = random_word(word_map, this_word_type) //Random word of the allowed random type
 		for j, v := range word_types {                            // Update previous word type with current word type for next iteration
 			if v == this_word_type {
@@ -57,17 +63,19 @@ func generate_fragment(word_map map[string][]string, fragment_length int) []stri
 			}
 		}
 	}
+	log.Printf("generated fragment: %v\n", fragment_slice)
 	return fragment_slice
 }
 
-func generate_passphrase(word_map map[string][]string, plen int) [][]string {
+func generate_passphrase(word_map map[string][]string, plen int) []string {
 	iterations := plen / MAGIC_FRAGMENT_LENGTH
-	phrase_slice := make([]string, iterations)
+	phrase_slice := make([]string, 1)
 
-	phrase_slice[0] = stringsgenerate_fragment(word_map, MAGIC_FRAGMENT_LENGTH)
+	phrase_slice = append(phrase_slice, generate_fragment(word_map, MAGIC_FRAGMENT_LENGTH)...)
 	if iterations >= 1 {
 		for i := 1; i <= iterations; i++ {
-			fragment_slice := append([]string{random_word(word_map, "conjunction")}, generate_fragment(word_map, MAGIC_FRAGMENT_LENGTH))
+			phrase_slice = append([]string{random_word(word_map, "conjunction")}, phrase_slice...)
+			phrase_slice = append(phrase_slice, generate_fragment(word_map, MAGIC_FRAGMENT_LENGTH)...)
 		}
 	}
 	return phrase_slice
@@ -86,7 +94,7 @@ func GeneratePassphrases(word_map map[string][]string, count int, length int) []
 		ps := generate_passphrase(word_map, length)
 		pj := strings.Join(ps, " ")
 		ps = strings.Split(pj, " ")
-		ps = ps[:length-1]
+		ps = ps[:length+1]
 		passphrases[i] = strings.Join(ps, " ")
 	}
 	return passphrases
