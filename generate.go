@@ -2,8 +2,9 @@ package main
 
 import (
 	"bufio"
+	"crypto/rand"
 	"log"
-	"math/rand"
+	"math/big"
 	"os"
 	"strings"
 )
@@ -33,9 +34,18 @@ var GRAMMAR_RULES = map[string][]string{
 
 var word_types = []string{"snoun", "pnoun", "verb", "adjective", "adverb", "preposition", "pronoun", "conjunction", "sarticle", "particle", "interjection"}
 
+func random_range(max int64) int64 {
+	max_big := *big.NewInt(max)
+	n, err := rand.Int(rand.Reader, &max_big)
+	if err != nil {
+		log.Fatalf("ERROR: cannot get random integer!\n")
+	}
+	return n.Int64()
+}
+
 func random_word(word_map map[string][]string, word_type string) string {
 	if words, ok := word_map[word_type]; ok {
-		return words[rand.Int31n(int32(len(words)-1))]
+		return words[random_range(int64(len(words)-1))] //rand.Int31n()
 	} else {
 		log.Printf("WARNING: random_word couldn't find word_type in word_map: %v\n", word_type)
 		return "()"
@@ -45,25 +55,24 @@ func random_word(word_map map[string][]string, word_type string) string {
 // A fragment is an autonomous run of words constructed using grammar rules
 func generate_fragment(word_map map[string][]string, fragment_length int) []string {
 	fragment_slice := make([]string, fragment_length)
-	prev_type_index := rand.Int31n(int32(len(word_types) - 1))             // Random initial word type
+	prev_type_index := random_range(int64(len(word_types) - 1))            // Random initial word type
 	fragment_slice[0] = random_word(word_map, word_types[prev_type_index]) // Random initial word
 	this_word_type := ""
 	for i := 1; i < fragment_length; i++ {
 		// Get random allowed word type by type of the previous word
 		next_word_type_count := int32(len(GRAMMAR_RULES[word_types[prev_type_index]]) - 1)
 		if next_word_type_count > 0 { //rand.Int31n cannot take zero as a param
-			this_word_type = GRAMMAR_RULES[word_types[prev_type_index]][rand.Int31n(next_word_type_count)]
+			this_word_type = GRAMMAR_RULES[word_types[prev_type_index]][random_range(int64(next_word_type_count))]
 		} else {
 			this_word_type = GRAMMAR_RULES[word_types[prev_type_index]][0]
 		}
 		fragment_slice[i] = random_word(word_map, this_word_type) //Random word of the allowed random type
 		for j, v := range word_types {                            // Update previous word type with current word type for next iteration
 			if v == this_word_type {
-				prev_type_index = int32(j)
+				prev_type_index = int64(j)
 			}
 		}
 	}
-	log.Printf("generated fragment: %v\n", fragment_slice)
 	return fragment_slice
 }
 
@@ -74,7 +83,7 @@ func generate_passphrase(word_map map[string][]string, plen int) []string {
 	phrase_slice = append(phrase_slice, generate_fragment(word_map, MAGIC_FRAGMENT_LENGTH)...)
 	if iterations >= 1 {
 		for i := 1; i <= iterations; i++ {
-			phrase_slice = append([]string{random_word(word_map, "conjunction")}, phrase_slice...)
+			phrase_slice = append(phrase_slice, random_word(word_map, "conjunction"))
 			phrase_slice = append(phrase_slice, generate_fragment(word_map, MAGIC_FRAGMENT_LENGTH)...)
 		}
 	}
@@ -95,7 +104,7 @@ func GeneratePassphrases(word_map map[string][]string, count int, length int) []
 		pj := strings.Join(ps, " ")
 		ps = strings.Split(pj, " ")
 		ps = ps[:length+1]
-		passphrases[i] = strings.Join(ps, " ")
+		passphrases[i] = strings.TrimSpace(strings.Join(ps, " "))
 	}
 	return passphrases
 }
