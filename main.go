@@ -21,10 +21,12 @@ func main() {
 	log.Printf("Loading word map")
 	word_map = LoadWordMap()
 	log.Printf("Starting and listening on 4343")
-	http.Handle("/static", http.FileServer(http.Dir("./static")))
+	fs := http.FileServer(http.Dir("static"))
+	http.Handle("/static", http.StripPrefix("/static/", fs))
 	http.HandleFunc("/", Root)
 	http.HandleFunc("/passphrases", Passphrases)
-	http.ListenAndServeTLS("0.0.0.0:4343", TLS_CERT, TLS_KEY, nil)
+	//http.ListenAndServeTLS("0.0.0.0:4343", TLS_CERT, TLS_KEY, nil)
+	http.ListenAndServe("0.0.0.0:8000", nil)
 }
 
 func Root(w http.ResponseWriter, r *http.Request) {

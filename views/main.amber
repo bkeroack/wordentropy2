@@ -1,19 +1,31 @@
-html
+html[ng-app="wordentropy2"]
 	head
 		link[rel="stylesheet"][href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"]
 		link[rel="stylesheet"][href="static/bootstrap-readable.min.css"]
 		link[rel="stylesheet"][href="static/zxcvbn-async.js"]
 		script[src="https://code.jquery.com/jquery-2.1.1.min.js"]
 		script[src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"]
+		script[src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.20/angular.min.js"]
+		script[src="static/controllers.js"]
 		title Wordentropy
-	body
+	body[ng-controller="Wordentropy2Controller"]
 		h1 Wordentropy
 		h4 Pseudo-grammatical passphrase generator
-		col-lg-6
-			table[class="table"]
-				tr
-					th Passphrase
-					th Entropy (bits)
-					th Est. Crack Time
+		div.row
+			div.col-lg-3
+				div.input-group
+					span.input-group-addon Length
+					input.form-control[type="number"][name="length"][min="2"][max="99"][ng-model="length"]				
+					span.input-group-addon Count
+					input.form-control[type="number"][name="count"][min="2"][max="99"][ng-model="count"]
+			button.btn.btn-default[type="button"] Go
+				
+		div.row
+			div.col-lg-6
+				table.table
+					tr
+						th Passphrase
+						th Entropy (bits)
+						th Est. Crack Time
 
 		
