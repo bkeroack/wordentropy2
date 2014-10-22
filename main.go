@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/eknkc/amber"
 	"log"
 	"net/http"
@@ -13,6 +14,7 @@ const (
 	TLS_KEY        = "tls/cert.key"
 	COUNT_DEFAULT  = 5
 	LENGTH_DEFAULT = 5
+	LISTEN_PORT    = 8000
 )
 
 var word_map = map[string][]string{}
@@ -20,13 +22,12 @@ var word_map = map[string][]string{}
 func main() {
 	log.Printf("Loading word map")
 	word_map = LoadWordMap()
-	log.Printf("Starting and listening on 4343")
-	fs := http.FileServer(http.Dir("static"))
-	http.Handle("/static", http.StripPrefix("/static/", fs))
+	log.Printf("Starting and listening on %v\n", LISTEN_PORT)
+	http.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("./static"))))
 	http.HandleFunc("/", Root)
 	http.HandleFunc("/passphrases", Passphrases)
 	//http.ListenAndServeTLS("0.0.0.0:4343", TLS_CERT, TLS_KEY, nil)
-	http.ListenAndServe("0.0.0.0:8000", nil)
+	http.ListenAndServe(fmt.Sprintf("0.0.0.0:%v", LISTEN_PORT), nil)
 }
 
 func Root(w http.ResponseWriter, r *http.Request) {
