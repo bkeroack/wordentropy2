@@ -1,31 +1,85 @@
 html[ng-app="wordentropy2"]
 	head
 		link[rel="stylesheet"][href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"]
-		link[rel="stylesheet"][href="static/bootstrap-readable.min.css"]
-		link[rel="stylesheet"][href="static/zxcvbn-async.js"]
+		link[rel="stylesheet"][href="static/flat-ui.min.css"]
+		style
+			html {
+			  position: relative;
+			  min-height: 100%;
+			}
+			body {
+			  /* Margin bottom by footer height */
+			  margin-bottom: 80px;
+			}
+			#footer {
+			  position: absolute;
+			  bottom: 0;
+			  width: 100%;
+			  /* Set the fixed height of the footer here */
+			  height: 70px;
+			  background-color: #f5f5f5;
+			}
+		title Wordentropy
+	body[ng-controller="Wordentropy2Controller"]
+		div.navbar.navbar-default.navbar-fixed-top[role="navigation"]
+			div.container
+				div.navbar-header
+					button.navbar-toggle[data-toggle="collapse"][data-target=".navbar-collapse"]
+						span.sr-only Toggle navigation
+					a.navbar-brand[href="#"] Wordentropy
+				div.navbar-collapse.collapse
+					ul.nav.navbar-nav
+						li.active
+							a[href="/"] Home
+						li
+							a[href="#"][ng-click="About();"] About
+		div.container
+			div.row
+				div.col-lg-1
+					p &nbsp;
+			div.row
+				div.col-lg-1
+					p &nbsp;
+			div.row
+				div.col-lg-1
+					p &nbsp;
+		div.container
+			div.jumbotron
+				div.container
+					div.row
+						div.col-lg-8.col-lg-offset-2
+							h4 Pseudo-grammatical passphrase generator
+					div.row
+						div.col-sm-4.col-sm-offset-3
+							div.input-group
+								span.input-group-addon Length
+								input.form-control[type="number"][name="length"][min="2"][max="99"][ng-model="length"]				
+								span.input-group-addon Count
+								input.form-control[type="number"][name="count"][min="2"][max="99"][ng-model="count"]
+						div.col-sm-1
+							button.btn.btn-default[type="button"] Go
+					div.row
+						div.col-lg-1
+							p &nbsp;
+					div.row
+						div.col-lg-8.col-lg-offset-2
+							table.table
+								tr
+									th Passphrase
+									th Entropy (bits)
+									th Est. Crack Time
+
+		div#footer
+			div.container
+				p
+					&copy; Benjamen Keroack - Source on 
+					a[href="https://github.com/bkeroack/wordentropy2"] GitHub
+
+		script[src="static/zxcvbn-async.js"]
 		script[src="https://code.jquery.com/jquery-2.1.1.min.js"]
 		script[src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"]
 		script[src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.20/angular.min.js"]
+		script[src="static/flat-ui.min.js"]
 		script[src="static/controllers.js"]
-		title Wordentropy
-	body[ng-controller="Wordentropy2Controller"]
-		h1 Wordentropy
-		h4 Pseudo-grammatical passphrase generator
-		div.row
-			div.col-lg-3
-				div.input-group
-					span.input-group-addon Length
-					input.form-control[type="number"][name="length"][min="2"][max="99"][ng-model="length"]				
-					span.input-group-addon Count
-					input.form-control[type="number"][name="count"][min="2"][max="99"][ng-model="count"]
-			button.btn.btn-default[type="button"] Go
-				
-		div.row
-			div.col-lg-6
-				table.table
-					tr
-						th Passphrase
-						th Entropy (bits)
-						th Est. Crack Time
 
 		
