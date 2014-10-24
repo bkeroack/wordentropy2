@@ -34,12 +34,18 @@ func Root(w http.ResponseWriter, r *http.Request) {
 	compiler := amber.New()
 	err := compiler.ParseFile("views/main.amber")
 	if err != nil {
-		http.Error(w, "Bad template: main.amber", 500)
+		http.Error(w, fmt.Sprintf("Bad template: main.amber: %v\n", err), 500)
 	}
 	tpl, err := compiler.Compile()
+	// var amber_options amber.Options
+	// var amber_diroptions amber.DirOptions
+	// amber_options.LineNumbers = true
+	// amber_diroptions.Recursive = false
+	// tpl_map, err := amber.CompileDir("views/", amber_diroptions, amber_options)
 	if err != nil {
-		http.Error(w, "Error compiling template: main.amber", 500)
+		http.Error(w, fmt.Sprintf("Error compiling templates: %v\n", err), 500)
 	}
+	//tpl_map["main"].Execute(w, nil)
 	tpl.Execute(w, nil)
 }
 

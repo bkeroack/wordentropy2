@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	WORDNET_PATH = "part-of-speech.txt"
+	WORDNET_PATH = "data/part-of-speech.txt"
 	// With this algorithm we get best results when we limit the number of consecutive words,
 	// then string fragments together with conjunctions. Otherwise we get a really long
 	// run-on word salad that is not convincingly grammatical.

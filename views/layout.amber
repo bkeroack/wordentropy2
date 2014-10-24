@@ -1,0 +1,40 @@
+!!! 5
+html[ng-app="wordentropy2"]
+	head
+		link[rel="stylesheet"][href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"]
+		link[rel="stylesheet"][href="static/css/flat-ui.min.css"]
+		link[rel="stylesheet"][href="static/css/style.css"]
+		title
+			block title 
+				| Wordentropy
+	body
+		div.navbar.navbar-default.navbar-fixed-top[role="navigation"]
+			div.container
+				div.navbar-header
+					button.navbar-toggle[data-toggle="collapse"][data-target=".navbar-collapse"]
+						span.sr-only Toggle navigation
+					a.navbar-brand[href="/"] Wordentropy
+				div.navbar-collapse.collapse
+					ul.nav.navbar-nav
+						li
+							a[href="/how-random"] How Random?
+						li
+							a[href="/about"] About
+
+		block content
+
+	div#footer
+		div.container
+			p
+				&copy;
+				a[href="http://asynch.ro"]
+					|Benjamen Keroack
+				- Source on 
+				a[href="https://github.com/bkeroack/wordentropy2"] GitHub
+
+	script[src="static/js/zxcvbn-async.js"]
+	script[src="https://code.jquery.com/jquery-2.1.1.min.js"]
+	script[src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"]
+	script[src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.20/angular.min.js"]
+	script[src="static/js/flat-ui.min.js"]
+	script[src="static/js/controllers.js"]

@@ -1,85 +1,41 @@
-html[ng-app="wordentropy2"]
-	head
-		link[rel="stylesheet"][href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"]
-		link[rel="stylesheet"][href="static/flat-ui.min.css"]
-		style
-			html {
-			  position: relative;
-			  min-height: 100%;
-			}
-			body {
-			  /* Margin bottom by footer height */
-			  margin-bottom: 80px;
-			}
-			#footer {
-			  position: absolute;
-			  bottom: 0;
-			  width: 100%;
-			  /* Set the fixed height of the footer here */
-			  height: 70px;
-			  background-color: #f5f5f5;
-			}
-		title Wordentropy
-	body[ng-controller="Wordentropy2Controller"]
-		div.navbar.navbar-default.navbar-fixed-top[role="navigation"]
-			div.container
-				div.navbar-header
-					button.navbar-toggle[data-toggle="collapse"][data-target=".navbar-collapse"]
-						span.sr-only Toggle navigation
-					a.navbar-brand[href="#"] Wordentropy
-				div.navbar-collapse.collapse
-					ul.nav.navbar-nav
-						li.active
-							a[href="/"] Home
-						li
-							a[href="#"][ng-click="About();"] About
-		div.container
-			div.row
-				div.col-lg-1
-					p &nbsp;
-			div.row
-				div.col-lg-1
-					p &nbsp;
-			div.row
-				div.col-lg-1
-					p &nbsp;
-		div.container
-			div.jumbotron
-				div.container
-					div.row
-						div.col-lg-8.col-lg-offset-2
-							h4 Pseudo-grammatical passphrase generator
-					div.row
-						div.col-sm-4.col-sm-offset-3
-							div.input-group
-								span.input-group-addon Length
-								input.form-control[type="number"][name="length"][min="2"][max="99"][ng-model="length"]				
-								span.input-group-addon Count
-								input.form-control[type="number"][name="count"][min="2"][max="99"][ng-model="count"]
-						div.col-sm-1
-							button.btn.btn-default[type="button"] Go
-					div.row
-						div.col-lg-1
-							p &nbsp;
-					div.row
-						div.col-lg-8.col-lg-offset-2
-							table.table
-								tr
-									th Passphrase
-									th Entropy (bits)
-									th Est. Crack Time
+extends layout
 
-		div#footer
+block content
+	div.container[ng-controller="PassphrasesController"]
+		div.jumbotron#passphrase-container
 			div.container
-				p
-					&copy; Benjamen Keroack - Source on 
-					a[href="https://github.com/bkeroack/wordentropy2"] GitHub
+				div.row
+					div.col-lg-8.col-lg-offset-2
+						h4 Pseudo-grammatical passphrase generator
+				div.row
+					div.col-sm-4.col-sm-offset-3
+						div.input-group
+							span.input-group-addon Length
+							input.form-control[type="number"][name="length"][min="2"][max="99"][ng-model="length"]				
+							span.input-group-addon Count
+							input.form-control[type="number"][name="count"][min="2"][max="99"][ng-model="count"]
+					div.col-sm-1
+						button.btn.btn-default[type="button"][ng-click="getPassphrases();"] Go
+				div.row
+					div.col-lg-1
+						p &nbsp;
+				div.row
+					div.col-lg-8.col-lg-offset-2
+						table.table
+							tr
+								th Passphrase
+								th Strength
+								th Entropy (bits)
+								th Est. Crack Time
+							tr[ng-repeat="p in passphrases"]
+								td {{ p.phrase }}
+								td
+									div.progress
+										div.progress-bar[role="progressbar"][aria-valuenow="{{ p.strength }}"][aria-valuemin="1"][aria-valuemax="5"]
+											span.sr-only {{ p.strength_label }}
+								td {{ p.bits }}
+								td {{ p.crack_time }}
 
-		script[src="static/zxcvbn-async.js"]
-		script[src="https://code.jquery.com/jquery-2.1.1.min.js"]
-		script[src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"]
-		script[src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.20/angular.min.js"]
-		script[src="static/flat-ui.min.js"]
-		script[src="static/controllers.js"]
+		
 
 		
