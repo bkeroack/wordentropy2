@@ -14,7 +14,7 @@ const (
 	TLS_KEY        = "tls/cert.key"
 	COUNT_DEFAULT  = 5
 	LENGTH_DEFAULT = 5
-	LISTEN_PORT    = 8000
+	LISTEN_PORT    = 80
 )
 
 var word_map = map[string][]string{}
@@ -59,7 +59,13 @@ func Passphrases(w http.ResponseWriter, r *http.Request) {
 		Length      int
 		Passphrases []string
 	}
+
+	type error_msg struct {
+		Error string
+	}
+
 	var output passphrase_output
+	var err_json error_msg
 
 	log.Printf("got Query: %v\n", query_values)
 
@@ -67,14 +73,18 @@ func Passphrases(w http.ResponseWriter, r *http.Request) {
 	if val, ok := query_values["count"]; ok {
 		count, err = strconv.Atoi(val[0])
 		if err != nil {
-			log.Printf("WARNING: bad count parameter passed: %v; %v\n", err, val[0])
+			err_json.Error = fmt.Sprintf("Bad count parameter passed: %v; %v\n", err, val[0])
+			err_str, _ := json.Marshal(err_json)
+			http.Error(w, string(err_str), 401)
 		}
 	}
 
 	if val, ok := query_values["length"]; ok {
 		length, err = strconv.Atoi(val[0])
 		if err != nil {
-			log.Printf("WARNING: bad lenth parameter passed: %v; %v\n", err, val[0])
+			err_json.Error = fmt.Sprintf("Bad length parameter passed: %v; %v\n", err, val[0])
+			err_str, _ := json.Marshal(err_json)
+			http.Error(w, string(err_str), 401)
 		}
 	}
 

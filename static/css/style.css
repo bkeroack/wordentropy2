@@ -18,3 +18,7 @@ body {
 div#passphrase-container {
 	margin-top: 75px;
 }
+
+div#passphrase-table {
+  margin-top: 50px;
+}

@@ -8,18 +8,17 @@ block content
 					div.col-lg-8.col-lg-offset-2
 						h4 Pseudo-grammatical passphrase generator
 				div.row
-					div.col-sm-4.col-sm-offset-3
+					div.col-lg-4.col-lg-offset-3
 						div.input-group
 							span.input-group-addon Length
-							input.form-control[type="number"][name="length"][min="2"][max="99"][ng-model="length"]				
+							input.form-control[type="number"][name="length"][min="1"][max="99"][ng-model="length"]				
 							span.input-group-addon Count
-							input.form-control[type="number"][name="count"][min="2"][max="99"][ng-model="count"]
+							input.form-control[type="number"][name="count"][min="1"][max="99"][ng-model="count"]
 					div.col-sm-1
 						button.btn.btn-default[type="button"][ng-click="getPassphrases();"] Go
-				div.row
-					div.col-lg-1
-						p &nbsp;
-				div.row
+				div.row[ng-show="error_alert"]
+					div.alert[role="alert"][ng-class="error_alert_class"] {{ error_alert_msg }}
+				div.row#passphrase-table
 					div.col-lg-8.col-lg-offset-2
 						table.table
 							tr
@@ -30,9 +29,7 @@ block content
 							tr[ng-repeat="p in passphrases"]
 								td {{ p.phrase }}
 								td
-									div.progress
-										div.progress-bar[role="progressbar"][aria-valuenow="{{ p.strength }}"][aria-valuemin="1"][aria-valuemax="5"]
-											span.sr-only {{ p.strength_label }}
+									div.alert[role="alert"][ng-class="p.strength_class"] {{ p.strength_label }}
 								td {{ p.bits }}
 								td {{ p.crack_time }}
 
