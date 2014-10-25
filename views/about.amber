@@ -1,0 +1,12 @@
+extends layout
+
+block content
+	div.container
+		h4 What is Wordentropy?
+		p
+			| We all know 
+			a[href="http://xkcd.com/936/"] passwords suck.
+		p
+			| Passphrases are better, but you still have to create some kind of mnemonic to make a random group of words easy to remember.
+		p
+			| Wordentropy tries to do this for you by creating a pseudo-grammatical "sentence" of random English words. This allows you to create a strong passphrase that's also easy to remember.

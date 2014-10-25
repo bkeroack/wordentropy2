@@ -1,0 +1,5 @@
+extends layout
+
+block content
+	div.container
+		h4 This explains in detail how it works.

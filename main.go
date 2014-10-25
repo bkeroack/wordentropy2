@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/eknkc/amber"
+	"html/template"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -14,45 +16,70 @@ const (
 	TLS_KEY        = "tls/cert.key"
 	COUNT_DEFAULT  = 5
 	LENGTH_DEFAULT = 5
-	LISTEN_PORT    = 80
+	LISTEN_PORT    = 443
 )
 
 var word_map = map[string][]string{}
+var templates = map[string]*template.Template{}
+var template_names = [...]string{
+	"main.amber",
+	"about.amber",
+	"random.amber",
+}
 
 func main() {
 	log.Printf("Loading word map")
 	word_map = LoadWordMap()
+	compile_templates()
 	log.Printf("Starting and listening on %v\n", LISTEN_PORT)
 	http.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("./static"))))
 	http.HandleFunc("/", Root)
+	http.HandleFunc("/about", About)
+	http.HandleFunc("/how-random", Random)
 	http.HandleFunc("/passphrases", Passphrases)
-	//http.ListenAndServeTLS("0.0.0.0:4343", TLS_CERT, TLS_KEY, nil)
-	http.ListenAndServe(fmt.Sprintf("0.0.0.0:%v", LISTEN_PORT), nil)
+	http.ListenAndServeTLS(fmt.Sprintf("0.0.0.0:%v", LISTEN_PORT), TLS_CERT, TLS_KEY, nil)
+	//http.ListenAndServe(fmt.Sprintf("0.0.0.0:%v", LISTEN_PORT), nil)
+}
+
+func compile_templates() {
+	log.Printf("Compiling templates...\n")
+	templates = make(map[string]*template.Template)
+	compiler := amber.New()
+	for t := range template_names {
+		template := template_names[t]
+		err := compiler.ParseFile(fmt.Sprintf("views/%v", template))
+		if err != nil {
+			log.Fatalf("Bad template: %v: %v\n", template, err)
+		}
+		tpl, err := compiler.Compile()
+		if err != nil {
+			log.Fatalf("Error compiling template: %v: %v\n", template, err)
+		}
+		templates[strings.Split(template, ".")[0]] = tpl
+	}
+	log.Printf("Compilation complete\n")
 }
 
 func Root(w http.ResponseWriter, r *http.Request) {
-	compiler := amber.New()
-	err := compiler.ParseFile("views/main.amber")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Bad template: main.amber: %v\n", err), 500)
-	}
-	tpl, err := compiler.Compile()
-	// var amber_options amber.Options
-	// var amber_diroptions amber.DirOptions
-	// amber_options.LineNumbers = true
-	// amber_diroptions.Recursive = false
-	// tpl_map, err := amber.CompileDir("views/", amber_diroptions, amber_options)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error compiling templates: %v\n", err), 500)
-	}
-	//tpl_map["main"].Execute(w, nil)
-	tpl.Execute(w, nil)
+	log.Printf("root\t%v\t%v\n", r.RemoteAddr, r.UserAgent())
+	templates["main"].Execute(w, nil)
+}
+
+func About(w http.ResponseWriter, r *http.Request) {
+	log.Printf("about\t%v\t%v\n", r.RemoteAddr, r.UserAgent())
+	templates["about"].Execute(w, nil)
+}
+
+func Random(w http.ResponseWriter, r *http.Request) {
+	log.Printf("random\t%v\t%v\n", r.RemoteAddr, r.UserAgent())
+	templates["random"].Execute(w, nil)
 }
 
 func Passphrases(w http.ResponseWriter, r *http.Request) {
 	query_values := r.URL.Query()
 	count := COUNT_DEFAULT
 	length := LENGTH_DEFAULT
+	w.Header().Set("Content-Type", "application/json")
 
 	type passphrase_output struct {
 		Count       int
@@ -67,14 +94,13 @@ func Passphrases(w http.ResponseWriter, r *http.Request) {
 	var output passphrase_output
 	var err_json error_msg
 
-	log.Printf("got Query: %v\n", query_values)
-
 	var err error
 	if val, ok := query_values["count"]; ok {
 		count, err = strconv.Atoi(val[0])
 		if err != nil {
 			err_json.Error = fmt.Sprintf("Bad count parameter passed: %v; %v\n", err, val[0])
 			err_str, _ := json.Marshal(err_json)
+			log.Printf(err_json.Error)
 			http.Error(w, string(err_str), 401)
 		}
 	}
@@ -84,25 +110,20 @@ func Passphrases(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			err_json.Error = fmt.Sprintf("Bad length parameter passed: %v; %v\n", err, val[0])
 			err_str, _ := json.Marshal(err_json)
+			log.Printf(err_json.Error)
 			http.Error(w, string(err_str), 401)
 		}
 	}
 
-	log.Printf("COUNT: %v\n", count)
-	log.Printf("LENGTH: %v\n", length)
+	log.Printf("passphrases\tcount=%v\tlength=%v\t%v\t%v\n", count, length, r.RemoteAddr, r.UserAgent())
 
 	passphrases := GeneratePassphrases(word_map, count, length)
-
-	for i, val := range passphrases {
-		log.Printf("phrase %v: %v\n", i, val)
-	}
 
 	output.Count = count
 	output.Length = length
 	output.Passphrases = passphrases
 
 	//emit json
-	w.Header().Set("Content-Type", "application/json")
 	j, err := json.Marshal(output)
 	if err != nil {
 		log.Printf("ERROR marshalling json: %v\n", err)
