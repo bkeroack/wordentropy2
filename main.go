@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"github.com/eknkc/amber"
@@ -29,16 +30,20 @@ var template_names = [...]string{
 
 func main() {
 	log.Printf("Loading word map")
+
 	word_map = LoadWordMap()
 	compile_templates()
+
+	config := &tls.Config{MinVersion: tls.VersionTLS10}
+	server := &http.Server{Addr: fmt.Sprintf("0.0.0.0:%v", LISTEN_PORT), Handler: nil, TLSConfig: config}
+
 	log.Printf("Starting and listening on %v\n", LISTEN_PORT)
 	http.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("./static"))))
 	http.HandleFunc("/", Root)
 	http.HandleFunc("/about", About)
 	http.HandleFunc("/how-random", Random)
 	http.HandleFunc("/passphrases", Passphrases)
-	http.ListenAndServeTLS(fmt.Sprintf("0.0.0.0:%v", LISTEN_PORT), TLS_CERT, TLS_KEY, nil)
-	//http.ListenAndServe(fmt.Sprintf("0.0.0.0:%v", LISTEN_PORT), nil)
+	server.ListenAndServeTLS(TLS_CERT, TLS_KEY)
 }
 
 func compile_templates() {
@@ -127,7 +132,7 @@ func Passphrases(w http.ResponseWriter, r *http.Request) {
 	j, err := json.Marshal(output)
 	if err != nil {
 		log.Printf("ERROR marshalling json: %v\n", err)
-		http.Error(w, "Internal Server Error", 500)
+		http.Error(w, "{ \"error\": \"Internal Server Error\" }", 500)
 	}
 	w.Write(j)
 }
