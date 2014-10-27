@@ -2,4 +2,32 @@ extends layout
 
 block content
 	div.container
-		h4 This explains in detail how it works.
+		h4 How does it work?
+		p
+			| Wordentropy uses the Parts of Speech Database from
+			a[href="http://aspell.net/other"] GNU aspell
+			| , which is one of the largest (if not the largest) freely available English word databases organized by word type
+			| (verb, noun, etc).
+		p
+			| The database consists of the following:
+		table.table
+			tr
+				th Type
+				th Count
+			tr
+				td Nouns
+				td #{nouns}
+			tr
+				td Verbs
+				td #{verbs}
+			tr
+				td Pronouns
+				td #{pronouns}
+			tr
+				td Total Words
+				td #{total_words}
+		p
+			| Wordentropy uses a simple set of positional grammar rules to construct pseudo-"sentences". They are not intended to be strictly correct or sensical--
+			| merely easier to remember than a randomly ordered group of words.			
+			
+

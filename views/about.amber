@@ -9,4 +9,10 @@ block content
 		p
 			| Passphrases are better, but you still have to create some kind of mnemonic to make a random group of words easy to remember.
 		p
-			| Wordentropy tries to do this for you by creating a pseudo-grammatical "sentence" of random English words. This allows you to create a strong passphrase that's also easy to remember.
+			| Wordentropy tries to do this for you by creating a pseudo-grammatical "sentence" of random English words. 
+			| This allows you to create a strong passphrase that's also easy to remember.
+		p
+			| Due to the distribution of word sizes in the English language you are more likely to see large, obscure words than smaller common ones like "the", "and" or "they".
+			| Therefore it may take a few attempts before you come across a passphrase that is easily rememberable for you.
+		p
+			| This site uses secure SSL/TLS connections and none of the generated passphrases are ever stored anywhere. You can view the source code to this site on Github (see page footer).
