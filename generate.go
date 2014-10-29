@@ -15,6 +15,7 @@ const (
 	// then string fragments together with conjunctions. Otherwise we get a really long
 	// run-on word salad that is not convincingly grammatical.
 	MAGIC_FRAGMENT_LENGTH = 4
+	BIG_WORD_CUTOFF       = 5
 )
 
 // word_type -> "can be followed by..."
@@ -33,6 +34,14 @@ var GRAMMAR_RULES = map[string][]string{
 }
 
 var word_types = []string{"snoun", "pnoun", "verb", "adjective", "adverb", "preposition", "pronoun", "conjunction", "sarticle", "particle", "interjection"}
+
+type word_stats struct {
+	Total_count int
+	Count_large int
+	Count_small int
+}
+
+var wordlist_stats = map[string]word_stats{}
 
 func random_range(max int64) int64 {
 	max_big := *big.NewInt(max)
@@ -109,6 +118,26 @@ func GeneratePassphrases(word_map map[string][]string, count int, length int) []
 	return passphrases
 }
 
+func GenerateStatistics() map[string]word_stats {
+	var statistics = make(map[string]word_stats)
+
+	for k, val := range word_map {
+		stat := word_stats{len(val), 0, 0}
+		b, s := 0, 0
+		for w := range val {
+			if len(val[w]) > BIG_WORD_CUTOFF {
+				b++
+			} else {
+				s++
+			}
+		}
+		stat.Count_large = b
+		stat.Count_small = s
+		statistics[k] = stat
+	}
+	return statistics
+}
+
 //Load Wordnet into a mapping of word type to words of that type
 func LoadWordMap() map[string][]string {
 
@@ -179,10 +208,13 @@ func LoadWordMap() map[string][]string {
 			log.Printf("Unknown word type! word: %v; pos: %v\n", word, pos_tag)
 			continue
 		}
-		word_map[word_type] = append(word_map[word_type], word)
+		if len(word) > 0 {
+			word_map[word_type] = append(word_map[word_type], word)
+		} else {
+			log.Printf("WARNING: got zero length word: line: %v (interpreted type: %v)", line, word_type)
+		}
+
 	}
-	for k, v := range word_map {
-		log.Printf("Word type: %v; count: %v", k, len(v))
-	}
+
 	return word_map
 }

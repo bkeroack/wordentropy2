@@ -2,7 +2,7 @@ extends layout
 
 block content
 	div.container[ng-controller="PassphrasesController"]
-		div.jumbotron#passphrase-container
+		div.jumbotron.offset-top
 			div.container
 				div.row
 					div.col-lg-8.col-lg-offset-2

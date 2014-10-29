@@ -32,6 +32,14 @@ func main() {
 	log.Printf("Loading word map")
 
 	word_map = LoadWordMap()
+	wordlist_stats = GenerateStatistics()
+
+	log.Printf("BIG_WORD_CUTOFF: %v\n", BIG_WORD_CUTOFF)
+	for k, v := range wordlist_stats {
+		log.Printf("Word type: %v; total_count: %v; big_count: %v; small_count: %v\n",
+			k, v.Total_count, v.Count_large, v.Count_small)
+	}
+
 	compile_templates()
 
 	config := &tls.Config{MinVersion: tls.VersionTLS10}

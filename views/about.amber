@@ -1,7 +1,7 @@
 extends layout
 
 block content
-	div.container
+	div.container.offset-top
 		h4 What is Wordentropy?
 		p
 			| We all know 
