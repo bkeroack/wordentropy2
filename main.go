@@ -28,17 +28,29 @@ var template_names = [...]string{
 	"random.amber",
 }
 
+var wordlist_stats = map[string]word_stats{}
+var frequency_map = map[string]map[int]int{}
+
+func create_frequency_csv() {
+
+}
+
+func generate_plots() {
+
+}
+
 func main() {
 	log.Printf("Loading word map")
 
 	word_map = LoadWordMap()
-	wordlist_stats = GenerateStatistics()
+	wordlist_stats, frequency_map = GenerateStatistics()
 
 	log.Printf("BIG_WORD_CUTOFF: %v\n", BIG_WORD_CUTOFF)
 	for k, v := range wordlist_stats {
-		log.Printf("Word type: %v; total_count: %v; big_count: %v; small_count: %v\n",
-			k, v.Total_count, v.Count_large, v.Count_small)
+		log.Printf("Word type: %v; total_count: %v; big_count: %v; small_count: %v; largest_word: %v\n",
+			k, v.Total_count, v.Count_large, v.Count_small, v.Max_char_count)
 	}
+	log.Printf("frequency_map: %v\n", frequency_map)
 
 	compile_templates()
 

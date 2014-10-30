@@ -36,12 +36,11 @@ var GRAMMAR_RULES = map[string][]string{
 var word_types = []string{"snoun", "pnoun", "verb", "adjective", "adverb", "preposition", "pronoun", "conjunction", "sarticle", "particle", "interjection"}
 
 type word_stats struct {
-	Total_count int
-	Count_large int
-	Count_small int
+	Total_count    int
+	Count_large    int
+	Count_small    int
+	Max_char_count int
 }
-
-var wordlist_stats = map[string]word_stats{}
 
 func random_range(max int64) int64 {
 	max_big := *big.NewInt(max)
@@ -118,24 +117,45 @@ func GeneratePassphrases(word_map map[string][]string, count int, length int) []
 	return passphrases
 }
 
-func GenerateStatistics() map[string]word_stats {
-	var statistics = make(map[string]word_stats)
+func GenerateStatistics() (map[string]word_stats, map[string]map[int]int) {
+	statistics := make(map[string]word_stats)
+	frequency_map := make(map[string]map[int]int)
+	frequency_map["ALL"] = make(map[int]int)
 
 	for k, val := range word_map {
-		stat := word_stats{len(val), 0, 0}
-		b, s := 0, 0
+		if _, ok := frequency_map[k]; !ok {
+			frequency_map[k] = make(map[int]int)
+		}
+		stat := word_stats{len(val), 0, 0, 0}
+		b, s, max_len := 0, 0, 0
 		for w := range val {
-			if len(val[w]) > BIG_WORD_CUTOFF {
+			word := val[w]
+			word_len := len(word)
+			if word_len > BIG_WORD_CUTOFF {
 				b++
 			} else {
 				s++
 			}
+			if word_len > max_len {
+				max_len = word_len
+			}
+			if _, ok := frequency_map[k][word_len]; ok {
+				frequency_map[k][word_len]++
+			} else {
+				frequency_map[k][word_len] = 1
+			}
+			if _, ok := frequency_map["ALL"][word_len]; ok {
+				frequency_map["ALL"][word_len]++
+			} else {
+				frequency_map["ALL"][word_len] = 1
+			}
 		}
 		stat.Count_large = b
 		stat.Count_small = s
+		stat.Max_char_count = max_len
 		statistics[k] = stat
 	}
-	return statistics
+	return statistics, frequency_map
 }
 
 //Load Wordnet into a mapping of word type to words of that type
