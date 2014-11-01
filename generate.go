@@ -15,7 +15,6 @@ const (
 	// then string fragments together with conjunctions. Otherwise we get a really long
 	// run-on word salad that is not convincingly grammatical.
 	MAGIC_FRAGMENT_LENGTH = 4
-	BIG_WORD_CUTOFF       = 5
 )
 
 // word_type -> "can be followed by..."
@@ -36,10 +35,9 @@ var GRAMMAR_RULES = map[string][]string{
 var word_types = []string{"snoun", "pnoun", "verb", "adjective", "adverb", "preposition", "pronoun", "conjunction", "sarticle", "particle", "interjection"}
 
 type word_stats struct {
-	Total_count    int
-	Count_large    int
-	Count_small    int
-	Max_char_count int
+	Total_count      int
+	Max_char_count   int
+	Distribution_map map[int]int
 }
 
 func random_range(max int64) int64 {
@@ -117,45 +115,46 @@ func GeneratePassphrases(word_map map[string][]string, count int, length int) []
 	return passphrases
 }
 
-func GenerateStatistics() (map[string]word_stats, map[string]map[int]int) {
+func GenerateStatistics() map[string]word_stats {
 	statistics := make(map[string]word_stats)
-	frequency_map := make(map[string]map[int]int)
-	frequency_map["ALL"] = make(map[int]int)
+	distribution_map := make(map[string]map[int]int)
+	distribution_map["ALL"] = make(map[int]int)
 
+	global_max_len := 0
+	global_word_count := 0
 	for k, val := range word_map {
-		if _, ok := frequency_map[k]; !ok {
-			frequency_map[k] = make(map[int]int)
+		if _, ok := distribution_map[k]; !ok {
+			distribution_map[k] = make(map[int]int)
 		}
-		stat := word_stats{len(val), 0, 0, 0}
-		b, s, max_len := 0, 0, 0
+		stat := word_stats{len(val), 0, map[int]int{}}
+		global_word_count += len(val)
+		max_len := 0
 		for w := range val {
 			word := val[w]
 			word_len := len(word)
-			if word_len > BIG_WORD_CUTOFF {
-				b++
-			} else {
-				s++
-			}
 			if word_len > max_len {
 				max_len = word_len
 			}
-			if _, ok := frequency_map[k][word_len]; ok {
-				frequency_map[k][word_len]++
-			} else {
-				frequency_map[k][word_len] = 1
+			if max_len > global_max_len {
+				global_max_len = max_len
 			}
-			if _, ok := frequency_map["ALL"][word_len]; ok {
-				frequency_map["ALL"][word_len]++
+			if _, ok := distribution_map[k][word_len]; ok {
+				distribution_map[k][word_len]++
 			} else {
-				frequency_map["ALL"][word_len] = 1
+				distribution_map[k][word_len] = 1
+			}
+			if _, ok := distribution_map["ALL"][word_len]; ok {
+				distribution_map["ALL"][word_len]++
+			} else {
+				distribution_map["ALL"][word_len] = 1
 			}
 		}
-		stat.Count_large = b
-		stat.Count_small = s
 		stat.Max_char_count = max_len
+		stat.Distribution_map = distribution_map[k]
 		statistics[k] = stat
 	}
-	return statistics, frequency_map
+	statistics["ALL"] = word_stats{global_word_count, global_max_len, distribution_map["ALL"]}
+	return statistics
 }
 
 //Load Wordnet into a mapping of word type to words of that type

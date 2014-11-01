@@ -2,12 +2,14 @@ package main
 
 import (
 	"crypto/tls"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"github.com/eknkc/amber"
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -18,6 +20,7 @@ const (
 	COUNT_DEFAULT  = 5
 	LENGTH_DEFAULT = 5
 	LISTEN_PORT    = 443
+	STATS_CSV      = "data/stats.csv"
 )
 
 var word_map = map[string][]string{}
@@ -28,14 +31,18 @@ var template_names = [...]string{
 	"random.amber",
 }
 
-var wordlist_stats = map[string]word_stats{}
-var frequency_map = map[string]map[int]int{}
+func write_distribution_csv(stats map[string]word_stats) bool {
+	f, err := os.Create(STATS_CSV)
+	if err != nil {
+		log.Fatalf("Error creating stats csv: %v\n", err)
+	}
+	defer f.Close()
 
-func create_frequency_csv() {
-
+	w := csv.NewWriter(f)
+	for i := 0; k, v := 
 }
 
-func generate_plots() {
+func generate_plots(csv string) bool {
 
 }
 
@@ -43,14 +50,12 @@ func main() {
 	log.Printf("Loading word map")
 
 	word_map = LoadWordMap()
-	wordlist_stats, frequency_map = GenerateStatistics()
+	wordlist_stats := GenerateStatistics()
 
-	log.Printf("BIG_WORD_CUTOFF: %v\n", BIG_WORD_CUTOFF)
 	for k, v := range wordlist_stats {
-		log.Printf("Word type: %v; total_count: %v; big_count: %v; small_count: %v; largest_word: %v\n",
-			k, v.Total_count, v.Count_large, v.Count_small, v.Max_char_count)
+		log.Printf("Word type: %v; total_count: %v; largest_word: %v\n",
+			k, v.Total_count, v.Max_char_count)
 	}
-	log.Printf("frequency_map: %v\n", frequency_map)
 
 	compile_templates()
 
