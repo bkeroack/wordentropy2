@@ -20,7 +20,7 @@ const (
 	COUNT_DEFAULT  = 5
 	LENGTH_DEFAULT = 5
 	LISTEN_PORT    = 443
-	STATS_CSV      = "data/stats.csv"
+	STATS_PATH     = "data/stats/"
 )
 
 var word_map = map[string][]string{}
@@ -31,19 +31,29 @@ var template_names = [...]string{
 	"random.amber",
 }
 
-func write_distribution_csv(stats map[string]word_stats) bool {
-	f, err := os.Create(STATS_CSV)
-	if err != nil {
-		log.Fatalf("Error creating stats csv: %v\n", err)
+func write_distribution_csv(stats map[string]word_stats) {
+	err := os.Mkdir(STATS_PATH, 0755)
+	if err != nil && !os.IsExist(err) {
+		log.Fatalf("Error creating stats path: %v\n", err)
 	}
-	defer f.Close()
 
-	w := csv.NewWriter(f)
-	for i := 0; k, v := 
+	for k, v := range stats {
+		f, err := os.Create(fmt.Sprintf("%v/%v.csv", STATS_PATH, k))
+		if err != nil {
+			log.Fatalf("Error creating stats csv for %v: %v\n", k, err)
+		}
+		w := csv.NewWriter(f)
+		dist := v.Distribution_map
+		for l, c := range dist {
+			w.Write([]string{strconv.Itoa(l), strconv.Itoa(c)})
+		}
+		w.Flush()
+		f.Close()
+	}
 }
 
 func generate_plots(csv string) bool {
-
+	return false
 }
 
 func main() {
@@ -56,6 +66,8 @@ func main() {
 		log.Printf("Word type: %v; total_count: %v; largest_word: %v\n",
 			k, v.Total_count, v.Max_char_count)
 	}
+
+	write_distribution_csv(wordlist_stats)
 
 	compile_templates()
 

@@ -132,6 +132,9 @@ func GenerateStatistics() map[string]word_stats {
 		for w := range val {
 			word := val[w]
 			word_len := len(word)
+			if word_len == 0 {
+				log.Printf("WARNING: found zero length word (type: %v, index: %v)\n", k, w)
+			}
 			if word_len > max_len {
 				max_len = word_len
 			}
@@ -161,17 +164,17 @@ func GenerateStatistics() map[string]word_stats {
 func LoadWordMap() map[string][]string {
 
 	word_map := map[string][]string{
-		"snoun":        make([]string, 1),
-		"pnoun":        make([]string, 1),
-		"verb":         make([]string, 1),
-		"adjective":    make([]string, 1),
-		"adverb":       make([]string, 1),
-		"preposition":  make([]string, 1),
-		"pronoun":      make([]string, 1),
-		"conjunction":  make([]string, 1),
-		"sarticle":     make([]string, 1),
-		"particle":     make([]string, 1),
-		"interjection": make([]string, 1),
+		"snoun":        []string{},
+		"pnoun":        []string{},
+		"verb":         []string{},
+		"adjective":    []string{},
+		"adverb":       []string{},
+		"preposition":  []string{},
+		"pronoun":      []string{},
+		"conjunction":  []string{},
+		"sarticle":     []string{},
+		"particle":     []string{},
+		"interjection": []string{},
 	}
 
 	file, err := os.Open(WORDNET_PATH)
