@@ -140,6 +140,11 @@ func About(w http.ResponseWriter, r *http.Request) {
 
 func Random(w http.ResponseWriter, r *http.Request) {
 	log.Printf("random\t%v\t%v\n", r.RemoteAddr, r.UserAgent())
+	data := struct {
+		Word_stats map[string]word_stats
+		Plots map[string]string
+		combined_plot_url string
+	}
 	templates["random"].Execute(w, nil)
 }
 

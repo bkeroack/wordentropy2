@@ -19,10 +19,10 @@ block content
 						tr
 							th Type
 							th Count
-						each $word_type in Word_stats
+						each $k, $v in Word_stats
 							tr
-								td #{word_type.Type}
-								td #{word_type.Count}
+								td #{$k}
+								td #{$v}
 			div.row
 				p
 					h4 Algorithm
@@ -38,19 +38,14 @@ block content
 					|. Therefore, the random phrase generator is likely to include big/"strange" words more frequently
 					| than normal conversational English. To preserve passphrase strength, the algorith does not currently bias word selection toward common English words.
 				p
-					h4 Word Length Distribution
+					h4 Word Length Distributions
+			each $k, $v in Plots
+				div.row
+					img[src="img/#{$k}.csv"][alt="#{$v}"] #{$v}
 			div.row
-				div.col-lg-6
-					table.table.table-bordered
-						tr
-							th Word Type
-							th Percentage <= 5 characters
-							th Percentage > 5 characters
-						each $word_type in Word_lengths
-							tr
-								td #{word_type.Type}
-								td #{word_type.Small_count}
-								td #{word_type.Big_count}
+				p
+					| Combined word length distribution (interactive):
+				iframe#plotly_combined[style="border:none"][width="100%"][src="#{combined_plot_url}"]
 
 			div.row
 				p

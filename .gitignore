@@ -3,4 +3,4 @@ wordentropy2
 data/plotly_creds.txt
 data/plot_urls.txt
 data/stats/*.csv
-data/plots/*
+static/img/*

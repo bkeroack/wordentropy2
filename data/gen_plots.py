@@ -5,7 +5,7 @@ import csv
 
 CREDENTIALS = "plotly_creds.txt"
 DATA_PATH = "./stats"
-PLOTS_PATH = "./plots"
+PLOTS_PATH = "../static/img"
 URL_FILE = "plot_urls.txt"
 
 TYPENAME_MAP = {
