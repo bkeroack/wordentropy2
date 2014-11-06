@@ -4,12 +4,14 @@ import (
 	"crypto/tls"
 	"encoding/csv"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/eknkc/amber"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 )
@@ -21,6 +23,7 @@ const (
 	LENGTH_DEFAULT = 5
 	LISTEN_PORT    = 443
 	STATS_PATH     = "data/stats/"
+	DATA_PATH      = "data/"
 )
 
 var word_map = map[string][]string{}
@@ -52,11 +55,24 @@ func write_distribution_csv(stats map[string]word_stats) {
 	}
 }
 
-func generate_plots(csv string) bool {
-	return false
+func generate_plots() {
+	log.Printf("Generating plots")
+
+	cmd := exec.Command("python", "gen_plots.py")
+	cmd.Dir = DATA_PATH
+	cmd.Stdout = os.Stderr
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		log.Fatalf("Error generating plots: %v\n", err)
+	}
 }
 
 func main() {
+
+	localFlag := flag.Bool("local", false, "local testing mode (do not generate plots, bind to high port)")
+	flag.Parse()
+
 	log.Printf("Loading word map")
 
 	word_map = LoadWordMap()
@@ -69,18 +85,28 @@ func main() {
 
 	write_distribution_csv(wordlist_stats)
 
+	port := LISTEN_PORT
+	if *localFlag {
+		port = 4343
+	} else {
+		generate_plots()
+	}
+
 	compile_templates()
 
 	config := &tls.Config{MinVersion: tls.VersionTLS10}
-	server := &http.Server{Addr: fmt.Sprintf("0.0.0.0:%v", LISTEN_PORT), Handler: nil, TLSConfig: config}
+	server := &http.Server{Addr: fmt.Sprintf("0.0.0.0:%v", port), Handler: nil, TLSConfig: config}
 
-	log.Printf("Starting and listening on %v\n", LISTEN_PORT)
+	log.Printf("Starting and listening on %v\n", port)
 	http.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("./static"))))
 	http.HandleFunc("/", Root)
 	http.HandleFunc("/about", About)
 	http.HandleFunc("/how-random", Random)
 	http.HandleFunc("/passphrases", Passphrases)
-	server.ListenAndServeTLS(TLS_CERT, TLS_KEY)
+	err := server.ListenAndServeTLS(TLS_CERT, TLS_KEY)
+	if err != nil {
+		log.Fatalf("Error starting HTTP listener: %v\n", err)
+	}
 }
 
 func compile_templates() {

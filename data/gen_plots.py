@@ -3,7 +3,10 @@
 import os
 import csv
 
+CREDENTIALS = "plotly_creds.txt"
 DATA_PATH = "./stats"
+PLOTS_PATH = "./plots"
+URL_FILE = "plot_urls.txt"
 
 TYPENAME_MAP = {
 	"particle": "Plural Article",
@@ -15,7 +18,7 @@ TYPENAME_MAP = {
 import plotly.plotly as py
 from plotly.graph_objs import *
 
-with open("plotly_creds.txt", "r") as f:
+with open(CREDENTIALS, "r") as f:
 	creds = [l for l in f]
 assert len(creds) == 2
 
@@ -25,6 +28,9 @@ import numpy as np
 
 type_map = {}
 plot_url_map = {}
+
+if not os.path.isdir(PLOTS_PATH):
+	os.mkdir(PLOTS_PATH)
 
 for filename in os.listdir(DATA_PATH):
 	if filename[-4:] == ".csv":
@@ -53,6 +59,8 @@ for filename in os.listdir(DATA_PATH):
 		print("generating plot: {}".format(basename))
 		
 		plot_url_map[basename] = py.plot(fig, filename='{}-distribution'.format(basename), auto_open=False)
+		fig = py.get_figure(plot_url_map[basename])
+		py.image.save_as(fig, os.path.join(PLOTS_PATH, "{}.png".format(basename)))
 
 layout = Layout(
 	title="Combined Length Distributions (all types)",
@@ -66,9 +74,9 @@ print("generating stacked plot")
 
 stacked_url = py.plot(fig, filename='combined_word_distributions', auto_open=False)
 
-with open("plot_urls.txt", "w") as f:
-	for k in plot_url_map:
-		if k != "ALL":
-			f.write("{}\n".format(plot_url_map[k]))
-	f.write("{}\n".format(plot_url_map["ALL"]))
+with open(URL_FILE, "w") as f:
+	#for k in plot_url_map:
+	#	if k != "ALL":
+	#		f.write("{}\n".format(plot_url_map[k]))
+	#f.write("{}\n".format(plot_url_map["ALL"]))
 	f.write(stacked_url)
