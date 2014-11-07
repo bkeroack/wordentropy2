@@ -41,7 +41,7 @@ block content
 					h4 Word Length Distributions
 			each $k, $v in Plots
 				div.row
-					img[src="img/#{$k}.csv"][alt="#{$v}"] #{$v}
+					img[src="img/#{$k}.png"][alt="#{$v}"] #{$v}
 			div.row
 				p
 					| Combined word length distribution (interactive):

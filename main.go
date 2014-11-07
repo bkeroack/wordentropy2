@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"crypto/tls"
 	"encoding/csv"
 	"encoding/json"
@@ -24,6 +25,7 @@ const (
 	LISTEN_PORT    = 443
 	STATS_PATH     = "data/stats/"
 	DATA_PATH      = "data/"
+	URL_FILE       = "data/plot_urls.txt"
 )
 
 var word_map = map[string][]string{}
@@ -33,14 +35,23 @@ var template_names = [...]string{
 	"about.amber",
 	"random.amber",
 }
+var name_map = map[string]string{
+	"particle": "Plural Article",
+	"sarticle": "Singular Article",
+	"pnoun":    "Plural Noun",
+	"snoun":    "Singular Noun",
+}
+var plot_map = map[string]string{} // file basename => proper name
+var wordlist_stats = map[string]word_stats{}
+var combined_plot_url = ""
 
-func write_distribution_csv(stats map[string]word_stats) {
+func write_distribution_csv() {
 	err := os.Mkdir(STATS_PATH, 0755)
 	if err != nil && !os.IsExist(err) {
 		log.Fatalf("Error creating stats path: %v\n", err)
 	}
 
-	for k, v := range stats {
+	for k, v := range wordlist_stats {
 		f, err := os.Create(fmt.Sprintf("%v/%v.csv", STATS_PATH, k))
 		if err != nil {
 			log.Fatalf("Error creating stats csv for %v: %v\n", k, err)
@@ -66,6 +77,30 @@ func generate_plots() {
 	if err != nil {
 		log.Fatalf("Error generating plots: %v\n", err)
 	}
+
+	plot_map = make(map[string]string)
+	for k, _ := range word_map {
+		if val, ok := name_map[k]; ok {
+			plot_map[k] = val
+		} else {
+			plot_map[k] = k
+		}
+	}
+
+	f, err := os.Open(URL_FILE)
+	if err != nil {
+		log.Fatalf("Error opening plot URL file: %v\n", err)
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		combined_plot_url = scanner.Text() //should only be one line
+	}
+
+	if len(combined_plot_url) < 5 {
+		log.Fatalf("Malformed plot URL file: %v\n", combined_plot_url)
+	}
 }
 
 func main() {
@@ -76,14 +111,14 @@ func main() {
 	log.Printf("Loading word map")
 
 	word_map = LoadWordMap()
-	wordlist_stats := GenerateStatistics()
+	wordlist_stats = GenerateStatistics()
 
 	for k, v := range wordlist_stats {
 		log.Printf("Word type: %v; total_count: %v; largest_word: %v\n",
 			k, v.Total_count, v.Max_char_count)
 	}
 
-	write_distribution_csv(wordlist_stats)
+	write_distribution_csv()
 
 	port := LISTEN_PORT
 	if *localFlag {
@@ -141,11 +176,15 @@ func About(w http.ResponseWriter, r *http.Request) {
 func Random(w http.ResponseWriter, r *http.Request) {
 	log.Printf("random\t%v\t%v\n", r.RemoteAddr, r.UserAgent())
 	data := struct {
-		Word_stats map[string]word_stats
-		Plots map[string]string
+		Word_stats        map[string]word_stats
+		Plots             map[string]string
 		combined_plot_url string
+	}{
+		wordlist_stats,
+		plot_map,
+		combined_plot_url,
 	}
-	templates["random"].Execute(w, nil)
+	templates["random"].Execute(w, data)
 }
 
 func Passphrases(w http.ResponseWriter, r *http.Request) {
@@ -170,7 +209,7 @@ func Passphrases(w http.ResponseWriter, r *http.Request) {
 	var err error
 	if val, ok := query_values["count"]; ok {
 		count, err = strconv.Atoi(val[0])
-		if err != nil {
+		if err != nil || count < 0 || count > 99 {
 			err_json.Error = fmt.Sprintf("Bad count parameter passed: %v; %v\n", err, val[0])
 			err_str, _ := json.Marshal(err_json)
 			log.Printf(err_json.Error)
@@ -180,7 +219,7 @@ func Passphrases(w http.ResponseWriter, r *http.Request) {
 
 	if val, ok := query_values["length"]; ok {
 		length, err = strconv.Atoi(val[0])
-		if err != nil {
+		if err != nil || length < 0 || length > 99 {
 			err_json.Error = fmt.Sprintf("Bad length parameter passed: %v; %v\n", err, val[0])
 			err_str, _ := json.Marshal(err_json)
 			log.Printf(err_json.Error)
