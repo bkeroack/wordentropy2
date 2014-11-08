@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bufio"
 	"crypto/tls"
-	"encoding/csv"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -11,8 +9,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 )
@@ -41,67 +37,6 @@ var name_map = map[string]string{
 	"pnoun":    "Plural Noun",
 	"snoun":    "Singular Noun",
 }
-var plot_map = map[string]string{} // file basename => proper name
-var wordlist_stats = map[string]word_stats{}
-var combined_plot_url = ""
-
-func write_distribution_csv() {
-	err := os.Mkdir(STATS_PATH, 0755)
-	if err != nil && !os.IsExist(err) {
-		log.Fatalf("Error creating stats path: %v\n", err)
-	}
-
-	for k, v := range wordlist_stats {
-		f, err := os.Create(fmt.Sprintf("%v/%v.csv", STATS_PATH, k))
-		if err != nil {
-			log.Fatalf("Error creating stats csv for %v: %v\n", k, err)
-		}
-		w := csv.NewWriter(f)
-		dist := v.Distribution_map
-		for l, c := range dist {
-			w.Write([]string{strconv.Itoa(l), strconv.Itoa(c)})
-		}
-		w.Flush()
-		f.Close()
-	}
-}
-
-func generate_plots() {
-	log.Printf("Generating plots")
-
-	cmd := exec.Command("python", "gen_plots.py")
-	cmd.Dir = DATA_PATH
-	cmd.Stdout = os.Stderr
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	if err != nil {
-		log.Fatalf("Error generating plots: %v\n", err)
-	}
-
-	plot_map = make(map[string]string)
-	for k, _ := range word_map {
-		if val, ok := name_map[k]; ok {
-			plot_map[k] = val
-		} else {
-			plot_map[k] = k
-		}
-	}
-
-	f, err := os.Open(URL_FILE)
-	if err != nil {
-		log.Fatalf("Error opening plot URL file: %v\n", err)
-	}
-	defer f.Close()
-
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		combined_plot_url = scanner.Text() //should only be one line
-	}
-
-	if len(combined_plot_url) < 5 {
-		log.Fatalf("Malformed plot URL file: %v\n", combined_plot_url)
-	}
-}
 
 func main() {
 
@@ -127,6 +62,7 @@ func main() {
 		generate_plots()
 	}
 
+	get_plots()
 	compile_templates()
 
 	config := &tls.Config{MinVersion: tls.VersionTLS10}
@@ -175,10 +111,12 @@ func About(w http.ResponseWriter, r *http.Request) {
 
 func Random(w http.ResponseWriter, r *http.Request) {
 	log.Printf("random\t%v\t%v\n", r.RemoteAddr, r.UserAgent())
+	log.Printf("combined url: %v\n", combined_plot_url)
+	log.Printf("plots: %v\n", plot_map)
 	data := struct {
 		Word_stats        map[string]word_stats
 		Plots             map[string]string
-		combined_plot_url string
+		Combined_plot_url string
 	}{
 		wordlist_stats,
 		plot_map,

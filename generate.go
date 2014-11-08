@@ -2,9 +2,7 @@ package main
 
 import (
 	"bufio"
-	"crypto/rand"
 	"log"
-	"math/big"
 	"os"
 	"strings"
 )
@@ -38,15 +36,6 @@ type word_stats struct {
 	Total_count      int
 	Max_char_count   int
 	Distribution_map map[int]int
-}
-
-func random_range(max int64) int64 {
-	max_big := *big.NewInt(max)
-	n, err := rand.Int(rand.Reader, &max_big)
-	if err != nil {
-		log.Fatalf("ERROR: cannot get random integer!\n")
-	}
-	return n.Int64()
 }
 
 func random_word(word_map map[string][]string, word_type string) string {

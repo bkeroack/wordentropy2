@@ -41,11 +41,11 @@ block content
 					h4 Word Length Distributions
 			each $k, $v in Plots
 				div.row
-					img[src="img/#{$k}.png"][alt="#{$v}"] #{$v}
+					img[src="static/img/#{$k}.png"][alt="#{$v}"] #{$v}
 			div.row
 				p
 					| Combined word length distribution (interactive):
-				iframe#plotly_combined[style="border:none"][width="100%"][src="#{combined_plot_url}"]
+				iframe#plotly_combined[style="border:none"][width="100%"][src="#{Combined_plot_url}"]
 
 			div.row
 				p
