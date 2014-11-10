@@ -19,10 +19,14 @@ block content
 						tr
 							th Type
 							th Count
-						each $k, $v in Word_stats
+						each $i, $v in Word_stats
 							tr
-								td #{$k}
-								td #{$v}
+								td
+									.bold ? $i == 0
+									| #{$v.Name}
+								td 
+									.bold ? $i == 0
+									| #{$v.Count}
 			div.row
 				p
 					h4 Algorithm
@@ -40,12 +44,13 @@ block content
 				p
 					h4 Word Length Distributions
 			each $k, $v in Plots
+				$image = "static/img/" + $k + ".png"
 				div.row
-					img[src="static/img/#{$k}.png"][alt="#{$v}"] #{$v}
+					img[src=$image][alt=$v] #{$v}
 			div.row
 				p
 					| Combined word length distribution (interactive):
-				iframe#plotly_combined[style="border:none"][width="100%"][src="#{Combined_plot_url}"]
+				iframe#plotly_combined[style="border:none"][width="100%"][src=Combined_plot_url]
 
 			div.row
 				p

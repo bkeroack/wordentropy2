@@ -32,12 +32,6 @@ var GRAMMAR_RULES = map[string][]string{
 
 var word_types = []string{"snoun", "pnoun", "verb", "adjective", "adverb", "preposition", "pronoun", "conjunction", "sarticle", "particle", "interjection"}
 
-type word_stats struct {
-	Total_count      int
-	Max_char_count   int
-	Distribution_map map[int]int
-}
-
 func random_word(word_map map[string][]string, word_type string) string {
 	if words, ok := word_map[word_type]; ok {
 		return words[random_range(int64(len(words)-1))] //rand.Int31n()

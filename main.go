@@ -31,12 +31,6 @@ var template_names = [...]string{
 	"about.amber",
 	"random.amber",
 }
-var name_map = map[string]string{
-	"particle": "Plural Article",
-	"sarticle": "Singular Article",
-	"pnoun":    "Plural Noun",
-	"snoun":    "Singular Noun",
-}
 
 func main() {
 
@@ -110,19 +104,22 @@ func About(w http.ResponseWriter, r *http.Request) {
 }
 
 func Random(w http.ResponseWriter, r *http.Request) {
-	log.Printf("random\t%v\t%v\n", r.RemoteAddr, r.UserAgent())
-	log.Printf("combined url: %v\n", combined_plot_url)
-	log.Printf("plots: %v\n", plot_map)
+	//log.Printf("random\t%v\t%v\n", r.RemoteAddr, r.UserAgent())
+	//log.Printf("combined url: %v\n", combined_plot_url)
+	//log.Printf("plots: %v\n", plot_map)
 	data := struct {
-		Word_stats        map[string]word_stats
+		Word_stats        []stat_ui
 		Plots             map[string]string
 		Combined_plot_url string
 	}{
-		wordlist_stats,
+		sanitized_stats,
 		plot_map,
 		combined_plot_url,
 	}
-	templates["random"].Execute(w, data)
+	err := templates["random"].Execute(w, &data)
+	if err != nil {
+		log.Printf("Error executing template: random: %v\n", err)
+	}
 }
 
 func Passphrases(w http.ResponseWriter, r *http.Request) {

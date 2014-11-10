@@ -22,3 +22,11 @@ div.offset-top {
 div#passphrase-table {
   margin-top: 50px;
 }
+
+iframe#plotly_combined {
+  height: 400px;
+}
+
+.bold {
+  font-weight: bold;
+}
