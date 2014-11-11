@@ -7,11 +7,28 @@ wordentropy2App.controller('PassphrasesController', function ($scope, $http, $lo
 	$scope.count = 5;
 
 	$scope.passphrases = [];
+	$scope.examples = [];
 
 	$scope.resetError = function() {
 		$scope.error_alert = false;
 		$scope.error_alert_msg = "";
 		$scope.error_alert_class = "";
+	};
+
+	$scope.generateExamples = function() {
+		$scope.examples = [];
+
+		var results= zxcvbn("h4x0r");
+		$scope.examples.push({
+			"password": "h4x0r",
+			"description": "word with substitutions",
+			"comparison": "harder to remember & less secure",
+			"bits": results.entropy,
+			"crack_time": results.crack_time_display,
+			"strength": results.score,
+			"strength_label": results.score > 3 ? "strong" : (results.score > 2 ? "decent" : "weak"),
+			"strength_class": results.score > 3 ? "alert-success" : (results.score > 2 ? "alert-warning" : "alert-danger")
+		});
 	};
 
 	$scope.getPassphrases = function() {
@@ -35,6 +52,7 @@ wordentropy2App.controller('PassphrasesController', function ($scope, $http, $lo
 					}
 					$scope.passphrases.push(phrase_obj);
 				}
+				$scope.generateExamples();
 				$scope.resetError();
 			}
 		}).error(function(data, status, headers, config) {

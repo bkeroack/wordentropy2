@@ -32,6 +32,25 @@ block content
 									div.alert[role="alert"][ng-class="p.strength_class"] {{ p.strength_label }}
 								td {{ p.bits }}
 								td {{ p.crack_time }}
+				div.row[ng-show="examples.length > 0"]
+					div.col-lg-12
+						p Compared to...
+						table.table
+							tr
+								th Example
+								th Description
+								th Strength
+								th Entropy (bits)
+								th Est. Crack Time
+								th Comparison
+							tr[ng-repeat="e in examples"]
+								td {{ e.password }}
+								td {{ e.description }}
+								td
+									div.alert[role="alert"][ng-class="e.strength_class"] {{ e.strength_label }}
+								td {{ e.bits }}
+								td {{ e.crack_time }}
+								td {{ e.comparison }}
 
 		
 

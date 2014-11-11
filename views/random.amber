@@ -31,25 +31,30 @@ block content
 				p
 					h4 Algorithm
 				p
-					| Wordentropy uses a simple set of positional grammar rules to construct pseudo-"sentences". They are not intended to be strictly correct or sensical--
+					| Wordentropy uses a simple set of positional grammar rules to construct pseudo-"sentences". They are not intended to be strictly correct or sensical&mdash;
 					| merely easier to remember than a randomly ordered group of words.
 				p
-					| As you can see above, the distribution of word lengths is heavily skewed towards nouns and noun phrases (as you might expect).
-					| There's also far more words that are long and obscure (to most people), since the number of words English speakers use commonly in daily conversation
+					| As you can see above, the distribution of word count is heavily skewed towards nouns and noun phrases (as might be expected).
+					| There's also far more words that are long and obscure (see length distibution graphs below), since the number of words English speakers use commonly in daily conversation
 					| probably do not number more than a few thousand
 					sup
 						| 1
-					|. Therefore, the random phrase generator is likely to include big/"strange" words more frequently
-					| than normal conversational English. To preserve passphrase strength, the algorith does not currently bias word selection toward common English words.
+					| and tend to be short. Therefore, this random phrase generator is likely to include big/strange words more frequently
+					| than normal conversational English. To preserve passphrase strength, the algorithm does not currently bias word selection towards more common words.
 				p
 					h4 Word Length Distributions
+			$i = 0
 			each $k, $v in Plots
 				$image = "static/img/" + $k + ".png"
-				div.row
-					img[src=$image][alt=$v] #{$v}
+				if $i % 2 != 0
+					div.row
+						div.col-lg-6
+							img[src=$image][alt=$v] #{$v}
+				else
+						div.col-lg-6
+							img[src=$image][alt=$v] #{$v}
+				$i = $i + 1
 			div.row
-				p
-					| Combined word length distribution (interactive):
 				iframe#plotly_combined[style="border:none"][width="100%"][src=Combined_plot_url]
 
 			div.row
