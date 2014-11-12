@@ -34,7 +34,7 @@ block content
 								td {{ p.crack_time }}
 				div.row[ng-show="examples.length > 0"]
 					div.col-lg-12
-						p Compared to...
+						p.bold Compare to...
 						table.table
 							tr
 								th Example
@@ -50,7 +50,7 @@ block content
 									div.alert[role="alert"][ng-class="e.strength_class"] {{ e.strength_label }}
 								td {{ e.bits }}
 								td {{ e.crack_time }}
-								td {{ e.comparison }}
+								td {{ e.mem_comparison }} {{ e.sec_comparison }} secure
 
 		
 

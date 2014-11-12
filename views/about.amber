@@ -11,6 +11,7 @@ block content
 		p
 			| Wordentropy tries to do this for you by creating a pseudo-grammatical "sentence" of random English words. 
 			| This allows you to create a strong passphrase that's also easy to remember.
+			| The passphrases are not intended to be strictly correct or sensical&mdash;merely easier to remember than a randomly ordered group of words.
 		p
 			| Due to the distribution of word sizes in the English language you are more likely to see large, obscure words than smaller common ones like "the", "and" or "they".
 			| Therefore it may take a few attempts before you come across a passphrase that is easily rememberable for you.

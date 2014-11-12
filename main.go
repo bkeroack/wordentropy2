@@ -104,9 +104,7 @@ func About(w http.ResponseWriter, r *http.Request) {
 }
 
 func Random(w http.ResponseWriter, r *http.Request) {
-	//log.Printf("random\t%v\t%v\n", r.RemoteAddr, r.UserAgent())
-	//log.Printf("combined url: %v\n", combined_plot_url)
-	//log.Printf("plots: %v\n", plot_map)
+	log.Printf("random\t%v\t%v\n", r.RemoteAddr, r.UserAgent())
 	data := struct {
 		Word_stats        []stat_ui
 		Plots             map[string]string
