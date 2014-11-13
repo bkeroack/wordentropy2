@@ -9,6 +9,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -36,6 +37,13 @@ func main() {
 
 	localFlag := flag.Bool("local", false, "local testing mode (do not generate plots, bind to high port)")
 	flag.Parse()
+
+	gomaxprocs := os.ExpandEnv("${GOMAXPROCS}")
+	if gomaxprocs == "" {
+		log.Printf("GOMAXPROCS not set; default used (1)\n")
+	} else {
+		log.Printf("GOMAXPROCS: %v\n", gomaxprocs)
+	}
 
 	log.Printf("Loading word map")
 
