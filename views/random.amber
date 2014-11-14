@@ -35,12 +35,12 @@ block content
 					| merely easier to remember than a randomly ordered group of words.
 				p
 					| As you can see above, the distribution of word count is heavily skewed towards nouns and noun phrases.
-					| There are also far more words that are long and obscure (see length distibution graphs below), since the number of words English speakers use commonly in daily conversation
-					| probably do not exceed more than a few thousand
+					|  There are also far more words that are long and obscure (see length distibution graphs below), since the number of words English speakers use commonly in daily conversation
+					|  probably do not exceed more than a few thousand
 					sup
 						| 1
-					| and tend to be short. Therefore, this random phrase generator is likely to include big/strange words more frequently
-					| than normal conversational English. To preserve passphrase strength, the algorithm does not currently bias word selection towards more common words.
+					|  and tend to be short. Therefore, this random phrase generator is likely to include big/strange words more frequently
+					|  than normal conversational English. To preserve passphrase strength, the algorithm does not currently bias word selection towards more common words.
 				p
 					| Passphrase strength and entropy estimates are provided by
 					a[href="https://github.com/dropbox/zxcvbn"] zxcvbn

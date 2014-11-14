@@ -2,18 +2,46 @@ extends layout
 
 block content
 	div.container.offset-top
-		h4 What is Wordentropy?
+		h4 Why are passphrases better?
 		p
 			| We all know 
 			a[href="http://xkcd.com/936/"] passwords suck.
+			|  They are difficult for humans to remember but very easy for computers to crack.
 		p
-			| Passphrases are better, but you still have to create some kind of mnemonic to make a random group of words easy to remember.
+			| Random word lists like in the cartoon above are better, but you still have to create some kind of mnemonic to make a random group of words easy to remember.
 		p
 			| Wordentropy tries to do this for you by creating a pseudo-grammatical "sentence" of random English words. 
-			| This allows you to create a strong passphrase that's also easy to remember.
-			| The passphrases are not intended to be strictly correct or sensical&mdash;merely easier to remember than a randomly ordered group of words.
+			|  This allows you to create a strong passphrase that's also easy to remember.
+			|  The passphrases are not intended to be strictly correct or sensical&mdash;merely easier to remember than a randomly ordered group of words.
 		p
 			| Due to the distribution of word sizes in the English language you are more likely to see large, obscure words than smaller common ones like "the", "and" or "they".
-			| Therefore it may take a few attempts before you come across a passphrase that is easily rememberable for you.
+			|  Therefore it may take a few attempts before you come across a passphrase that is easily rememberable for you.
 		p
 			| This site uses secure SSL/TLS connections and none of the generated passphrases are ever stored anywhere. You can view the source code to this site on Github (see page footer).
+
+		h4 How can I make my website/service passphrase-friendly?
+		dl
+			dt Do not use fixed, arbitrary complexity rules.
+			dd 
+				| This is the biggest offender. Don't require users to append '$' or '&amp;' or '1' to their 30+ character passphrase. 
+				|  Ideally you should use a progressive algorithm that requires more complexity (symbols/numbers) at short lengths and 
+				|  reduced or no complexity at longer lengths. If that's not feasible, make your minimum acceptable password length
+				|  12-14 characters with no enforced complexity. This will exclude the majority of really bad passwords while allowing good ones.
+		dl
+			dt Allow spaces in passwords/passphrases.
+			dd I'm looking at you Apple.
+		dl
+			dt Do not have short password expirations.
+			dd
+				| Passphrases of sufficient length approach the security of cryptographic 
+				|  keys (128+ bits of entropy) and should have expirations accordingly--measured in months or years, not days. Short password
+				|  expirations essentially force your users to reduce their password complexity (eg, by incrementing an integer at the end
+				|  of their password each time). Trying to counter this with 'intelligent' password rules is a great way of telling users to use your
+				|  service as little as they possibly can.
+		dl
+			dt Do not limit password length.
+			dd
+				| I believe this is most common in poorly-architected applications that store passwords in fixed-length SQL columns (unhashed, or with some custom encryption that is not fixed-length).
+				|  I've even heard of websites that allow any length password in the input form but then silently drop all but the first N characters.
+				|  This is even worse than an explicit limit. You should always be hashing passwords, resulting in a fixed-length output independent
+				|  of password input length.

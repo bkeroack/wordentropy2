@@ -17,9 +17,9 @@ html[ng-app="wordentropy2"]
 				div.navbar-collapse.collapse
 					ul.nav.navbar-nav
 						li
-							a[href="/how-random"] How Random?
+							a[href="/about"] Why?
 						li
-							a[href="/about"] About
+							a[href="/how-random"] How Random?
 
 		block content
 

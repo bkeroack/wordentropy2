@@ -46,16 +46,19 @@ wordentropy2App.controller('PassphrasesController', function ($scope, $http, $lo
 			'e': '3',
 			'o': '0',
 			'l': '1',
-			's': '5'
+			's': '5',
+			't': '7'
 		};
 		var special_chars = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '+', '='];
 		var new_word = "";
+		var r = 0;
 
 		for (var i in word) {
 			var letter = word[i]
 			if (letter in substitutions) {
-				if (Math.random() > 0.4) {
+				if (Math.random() > 0.5) {
 					new_word += substitutions[letter];
+					r += 1;
 				} else {
 					new_word += letter;
 				}
@@ -64,13 +67,22 @@ wordentropy2App.controller('PassphrasesController', function ($scope, $http, $lo
 			}
 		}
 
-		// append a special character and a number
-		if (Math.random() > 0.3) {
-			new_word += special_chars[Math.floor(Math.random()*special_chars.length)];
+		// require at least one subsitution
+		if (r == 0) {
+			new_word = "";
+			for (i in word) {
+				letter = word[i];
+				if (letter in substitutions && r == 0) {
+					new_word += substitutions[letter];
+					r += 1;
+				} else {
+					new_word += letter;
+				}
+			}
 		}
-		if (Math.random() > 0.7) {
-			new_word += Math.floor(Math.random()*10);
-		}
+
+		// append a special character
+		new_word += special_chars[Math.floor(Math.random()*special_chars.length)];
 		return new_word;
 	};
 
@@ -109,7 +121,7 @@ wordentropy2App.controller('PassphrasesController', function ($scope, $http, $lo
 		results = zxcvbn(ex2);
 		$scope.examples.push({
 			"password": ex2,
-			"description": "substituted word",
+			"description": "substituted word with symbol",
 			"mem_comparison": "harder to remember and",
 			"sec_comparison": results.entropy < avg_ent ? "less" : "more",
 			"bits": results.entropy,
