@@ -4,18 +4,34 @@ block content
 	div.container[ng-controller="PassphrasesController"]
 		div.jumbotron.offset-top
 			div.container
-				div.row
-					div.col-lg-8.col-lg-offset-2
+				div.row.row-centered
+					div.col-lg-7.col-centered
 						h4 Pseudo-grammatical passphrase generator
-				div.row
-					div.col-lg-4.col-lg-offset-3
+				div.row.row-centered
+					div.col-lg-4.col-centered
 						div.input-group
 							span.input-group-addon Length
 							input.form-control[type="number"][name="length"][min="1"][max="99"][ng-model="length"]				
 							span.input-group-addon Count
 							input.form-control[type="number"][name="count"][min="1"][max="99"][ng-model="count"]
-					div.col-sm-1
-						button.btn.btn-default[type="button"][ng-click="getPassphrases();"] Go
+					div.col-lg-1.col-centered
+						button.btn.btn-default.offset-btn[type="button"][ng-click="getPassphrases();"] Go
+				div.row.row-centered
+					div.col-lg-4.col-centered
+						div.input-group
+							input[type="checkbox"][ng-model="prudish"]
+							label.form-label Filter potentially offensive words
+				div.row.row-centered
+					div.col-lg-6.col-centered
+						p Workarounds for bad password requirements:
+				div.row.row-centered
+					div.col-lg-6.col-centered
+						input[type="checkbox"][ng-model="remove_spaces"]
+						label.form-label Remove spaces
+						input[type="checkbox"][ng-model="add_digit"]
+						label.form-label Add a number
+						input[type="checkbox"][ng-model="add_symbol"]
+						label.form-label Add a symbol
 				div.row[ng-show="error_alert"]
 					div.alert[role="alert"][ng-class="error_alert_class"] {{ error_alert_msg }}
 				div.row#passphrase-table
