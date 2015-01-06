@@ -27,15 +27,17 @@ const (
 
 var word_map = map[string][]string{}
 var templates = map[string]*template.Template{}
+var template_name_map = map[string]string{}
 var template_names = [...]string{
 	"main.amber",
 	"about.amber",
 	"random.amber",
 }
 
-func main() {
+var localFlag *bool
 
-	localFlag := flag.Bool("local", false, "local testing mode (do not generate plots, bind to high port)")
+func init() {
+	localFlag = flag.Bool("local", false, "local testing mode (do not generate plots, bind to high port)")
 	flag.Parse()
 
 	gomaxprocs := os.ExpandEnv("${GOMAXPROCS}")
@@ -44,6 +46,9 @@ func main() {
 	} else {
 		log.Printf("GOMAXPROCS: %v\n", gomaxprocs)
 	}
+}
+
+func main() {
 
 	log.Printf("Loading word map")
 
@@ -82,33 +87,52 @@ func main() {
 	}
 }
 
+func compile_template(n string) *template.Template {
+	compiler := amber.New()
+	err := compiler.ParseFile(fmt.Sprintf("views/%v", n))
+	if err != nil {
+		log.Fatalf("Bad template: %v: %v\n", n, err)
+	}
+	tpl, err := compiler.Compile()
+	if err != nil {
+		log.Fatalf("Error compiling template: %v: %v\n", n, err)
+	}
+	return tpl
+}
+
 func compile_templates() {
 	log.Printf("Compiling templates...\n")
 	templates = make(map[string]*template.Template)
-	compiler := amber.New()
+	template_name_map = make(map[string]string)
 	for t := range template_names {
 		template := template_names[t]
-		err := compiler.ParseFile(fmt.Sprintf("views/%v", template))
-		if err != nil {
-			log.Fatalf("Bad template: %v: %v\n", template, err)
-		}
-		tpl, err := compiler.Compile()
-		if err != nil {
-			log.Fatalf("Error compiling template: %v: %v\n", template, err)
-		}
-		templates[strings.Split(template, ".")[0]] = tpl
+		n := strings.Split(template, ".")[0]
+		templates[n] = compile_template(template)
+		template_name_map[n] = template
 	}
 	log.Printf("Compilation complete\n")
 }
 
+func execute_template(n string, w http.ResponseWriter, r *http.Request, data interface{}) {
+	log.Printf("%v\t%v\t%v\n", n, r.RemoteAddr, r.UserAgent())
+	var err error
+	if !*localFlag {
+		err = templates[n].Execute(w, data)
+	} else {
+		tmpl := compile_template(template_name_map[n])
+		err = tmpl.Execute(w, data)
+	}
+	if err != nil {
+		log.Printf("Error executing template: %v: %v\n", n, err)
+	}
+}
+
 func Root(w http.ResponseWriter, r *http.Request) {
-	log.Printf("root\t%v\t%v\n", r.RemoteAddr, r.UserAgent())
-	templates["main"].Execute(w, nil)
+	execute_template("main", w, r, nil)
 }
 
 func About(w http.ResponseWriter, r *http.Request) {
-	log.Printf("about\t%v\t%v\n", r.RemoteAddr, r.UserAgent())
-	templates["about"].Execute(w, nil)
+	execute_template("about", w, r, nil)
 }
 
 func Random(w http.ResponseWriter, r *http.Request) {
@@ -122,10 +146,7 @@ func Random(w http.ResponseWriter, r *http.Request) {
 		plot_map,
 		combined_plot_url,
 	}
-	err := templates["random"].Execute(w, &data)
-	if err != nil {
-		log.Printf("Error executing template: random: %v\n", err)
-	}
+	execute_template("random", w, r, &data)
 }
 
 func Passphrases(w http.ResponseWriter, r *http.Request) {
