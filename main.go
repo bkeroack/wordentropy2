@@ -149,10 +149,52 @@ func Random(w http.ResponseWriter, r *http.Request) {
 	execute_template("random", w, r, &data)
 }
 
+func process_passphrases_options(o *GenerateOptions, qv map[string][]string) (bool, string) {
+	o.count = COUNT_DEFAULT
+	o.length = LENGTH_DEFAULT
+
+	if val, ok := qv["count"]; ok {
+		count, err := strconv.Atoi(val[0])
+		if err != nil || count < 0 || count > 99 {
+			return false, fmt.Sprintf("Bad count parameter passed: %v; %v\n", err, val[0])
+		}
+		o.count = count
+	}
+
+	if val, ok := qv["length"]; ok {
+		length, err := strconv.Atoi(val[0])
+		if err != nil || length < 0 || length > 99 {
+			return false, fmt.Sprintf("Bad length parameter passed: %v; %v\n", err, val[0])
+		}
+		o.length = length
+	}
+
+	if val, ok := qv["prudish"]; ok {
+		if val[0] == "true" {
+			o.prudish = true
+		}
+	}
+	if val, ok := qv["no_spaces"]; ok {
+		if val[0] == "true" {
+			o.no_spaces = true
+		}
+	}
+	if val, ok := qv["add_digit"]; ok {
+		if val[0] == "true" {
+			o.add_digit = true
+		}
+	}
+	if val, ok := qv["add_symbol"]; ok {
+		if val[0] == "true" {
+			o.add_symbol = true
+		}
+	}
+	return true, ""
+}
+
 func Passphrases(w http.ResponseWriter, r *http.Request) {
 	query_values := r.URL.Query()
-	count := COUNT_DEFAULT
-	length := LENGTH_DEFAULT
+	var options GenerateOptions
 	w.Header().Set("Content-Type", "application/json")
 
 	type passphrase_output struct {
@@ -161,40 +203,20 @@ func Passphrases(w http.ResponseWriter, r *http.Request) {
 		Passphrases []string
 	}
 
-	type error_msg struct {
-		Error string
-	}
-
 	var output passphrase_output
-	var err_json error_msg
 
-	var err error
-	if val, ok := query_values["count"]; ok {
-		count, err = strconv.Atoi(val[0])
-		if err != nil || count < 0 || count > 99 {
-			err_json.Error = fmt.Sprintf("Bad count parameter passed: %v; %v\n", err, val[0])
-			err_str, _ := json.Marshal(err_json)
-			log.Printf(err_json.Error)
-			http.Error(w, string(err_str), 401)
-		}
+	ok, msg := process_passphrases_options(&options, query_values)
+	if !ok {
+		emit_json_error(w, msg, 401)
 	}
 
-	if val, ok := query_values["length"]; ok {
-		length, err = strconv.Atoi(val[0])
-		if err != nil || length < 0 || length > 99 {
-			err_json.Error = fmt.Sprintf("Bad length parameter passed: %v; %v\n", err, val[0])
-			err_str, _ := json.Marshal(err_json)
-			log.Printf(err_json.Error)
-			http.Error(w, string(err_str), 401)
-		}
-	}
+	log.Printf("options: %v\n", options)
+	log.Printf("passphrases\tcount=%v\tlength=%v\t%v\t%v\n", options.count, options.length, r.RemoteAddr, r.UserAgent())
 
-	log.Printf("passphrases\tcount=%v\tlength=%v\t%v\t%v\n", count, length, r.RemoteAddr, r.UserAgent())
+	passphrases := GeneratePassphrases(word_map, options)
 
-	passphrases := GeneratePassphrases(word_map, count, length)
-
-	output.Count = count
-	output.Length = length
+	output.Count = options.count
+	output.Length = options.length
 	output.Passphrases = passphrases
 
 	//emit json

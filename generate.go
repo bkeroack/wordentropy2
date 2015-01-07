@@ -15,6 +15,15 @@ const (
 	MAGIC_FRAGMENT_LENGTH = 4
 )
 
+type GenerateOptions struct {
+	count      int
+	length     int
+	prudish    bool
+	no_spaces  bool
+	add_digit  bool
+	add_symbol bool
+}
+
 // word_type -> "can be followed by..."
 var GRAMMAR_RULES = map[string][]string{
 	"snoun":        []string{"adverb", "verb", "pronoun", "conjunction"},
@@ -80,19 +89,19 @@ func generate_passphrase(word_map map[string][]string, plen int) []string {
 }
 
 //Generate count number of random passphrases of size length from word_map
-func GeneratePassphrases(word_map map[string][]string, count int, length int) []string {
+func GeneratePassphrases(word_map map[string][]string, options GenerateOptions) []string {
 	// Generate count passphrase slices
 	// Merge each passphrase slice into a single string
 	// Split string by spaces (individual random "words" can actually be multiword phrases)
 	// Truncate slice to length words
 	// Merge truncated slice back into string
 	// Return slice of strings (final random passphrases)
-	passphrases := make([]string, count)
-	for i := 0; i < count; i++ {
-		ps := generate_passphrase(word_map, length)
+	passphrases := make([]string, options.count)
+	for i := 0; i < options.count; i++ {
+		ps := generate_passphrase(word_map, options.length)
 		pj := strings.Join(ps, " ")
 		ps = strings.Split(pj, " ")
-		ps = ps[:length+1]
+		ps = ps[:options.length+1]
 		passphrases[i] = strings.TrimSpace(strings.Join(ps, " "))
 	}
 	return passphrases

@@ -8,6 +8,11 @@ wordentropy2App.controller('PassphrasesController', function ($scope, $http, $lo
 
 	$scope.passphrases = [];
 	$scope.examples = [];
+	$scope.prudish = false;
+	$scope.remove_spaces = false;
+	$scope.add_digit = false;
+	$scope.add_symbol = false;
+
 
 	$scope.resetError = function() {
 		$scope.error_alert = false;
@@ -150,6 +155,13 @@ wordentropy2App.controller('PassphrasesController', function ($scope, $http, $lo
 		
 		var url = home + "/passphrases?length=" + encodeURIComponent($scope.length) + "&count="
 		+ encodeURIComponent($scope.count);
+
+		var options = ["prudish", "remove_spaces", "add_digit", "add_symbol"];
+		for (var i in options) {
+			if ($scope[options[i]]) {
+				url += "&" + options[i] + "=" + "true";
+			}
+		}
 		
 		$http.get(url).success(function(data, status, headers, config) {
 			if (data.hasOwnProperty("Passphrases") && typeof(zxcvbn) == 'function') {

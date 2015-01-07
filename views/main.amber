@@ -20,12 +20,12 @@ block content
 					div.col-lg-4.col-centered
 						div.input-group
 							input[type="checkbox"][ng-model="prudish"]
-							label.form-label Filter potentially offensive words
+							label.form-label &nbsp;Filter potentially offensive words
 				div.row.row-centered
 					div.col-lg-6.col-centered
 						p Workarounds for bad password requirements:
 				div.row.row-centered
-					div.col-lg-6.col-centered
+					div.col-lg-5.col-centered
 						input[type="checkbox"][ng-model="remove_spaces"]
 						label.form-label Remove spaces
 						input[type="checkbox"][ng-model="add_digit"]
