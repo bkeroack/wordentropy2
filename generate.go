@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	WORDNET_PATH = "data/part-of-speech.txt"
+	WORDNET_PATH   = "data/part-of-speech.txt"
+	OFFENSIVE_PATH = "data/offensive.txt"
 	// With this algorithm we get best results when we limit the number of consecutive words,
 	// then string fragments together with conjunctions. Otherwise we get a really long
 	// run-on word salad that is not convincingly grammatical.
@@ -39,11 +40,35 @@ var GRAMMAR_RULES = map[string][]string{
 	"interjection": []string{"snoun", "pnoun", "preposition", "adjective", "conjunction", "sarticle", "particle"},
 }
 
+var SYMBOLS = []string{"!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "+", "_", "="}
+
 var word_types = []string{"snoun", "pnoun", "verb", "adjective", "adverb", "preposition", "pronoun", "conjunction", "sarticle", "particle", "interjection"}
 
-func random_word(word_map map[string][]string, word_type string) string {
+var offensive = map[string]uint{}
+
+func random_word(word_map map[string][]string, word_type string, options GenerateOptions) string {
+	grw := func(words []string) (string, bool) {
+		word := random_choice(words)
+		_, ok := offensive[word]
+		return word, ok
+	}
 	if words, ok := word_map[word_type]; ok {
-		return words[random_range(int64(len(words)-1))] //rand.Int31n()
+		word, off := grw(words)
+		if options.prudish && off {
+			log.Printf("Got offensive word: %v\n", word)
+			i := 0
+			for i = 0; off && i < 10; i++ {
+				word, off = grw(words)
+				if off {
+					log.Printf("Got offensive word (retry): %v\n", word)
+				}
+			}
+			if i >= 10 {
+				log.Printf("Gave up trying to get non-offensive word!")
+				word = ""
+			}
+		}
+		return word
 	} else {
 		log.Printf("WARNING: random_word couldn't find word_type in word_map: %v\n", word_type)
 		return "()"
@@ -51,10 +76,10 @@ func random_word(word_map map[string][]string, word_type string) string {
 }
 
 // A fragment is an autonomous run of words constructed using grammar rules
-func generate_fragment(word_map map[string][]string, fragment_length int) []string {
+func generate_fragment(word_map map[string][]string, fragment_length int, options GenerateOptions) []string {
 	fragment_slice := make([]string, fragment_length)
-	prev_type_index := random_range(int64(len(word_types) - 1))            // Random initial word type
-	fragment_slice[0] = random_word(word_map, word_types[prev_type_index]) // Random initial word
+	prev_type_index := random_range(int64(len(word_types) - 1))                     // Random initial word type
+	fragment_slice[0] = random_word(word_map, word_types[prev_type_index], options) // Random initial word
 	this_word_type := ""
 	for i := 1; i < fragment_length; i++ {
 		// Get random allowed word type by type of the previous word
@@ -64,8 +89,8 @@ func generate_fragment(word_map map[string][]string, fragment_length int) []stri
 		} else {
 			this_word_type = GRAMMAR_RULES[word_types[prev_type_index]][0]
 		}
-		fragment_slice[i] = random_word(word_map, this_word_type) //Random word of the allowed random type
-		for j, v := range word_types {                            // Update previous word type with current word type for next iteration
+		fragment_slice[i] = random_word(word_map, this_word_type, options) //Random word of the allowed random type
+		for j, v := range word_types {                                     // Update previous word type with current word type for next iteration
 			if v == this_word_type {
 				prev_type_index = int64(j)
 			}
@@ -74,15 +99,15 @@ func generate_fragment(word_map map[string][]string, fragment_length int) []stri
 	return fragment_slice
 }
 
-func generate_passphrase(word_map map[string][]string, plen int) []string {
-	iterations := plen / MAGIC_FRAGMENT_LENGTH
+func generate_passphrase(word_map map[string][]string, options GenerateOptions) []string {
+	iterations := options.length / MAGIC_FRAGMENT_LENGTH
 	phrase_slice := make([]string, 1)
 
-	phrase_slice = append(phrase_slice, generate_fragment(word_map, MAGIC_FRAGMENT_LENGTH)...)
+	phrase_slice = append(phrase_slice, generate_fragment(word_map, MAGIC_FRAGMENT_LENGTH, options)...)
 	if iterations >= 1 {
 		for i := 1; i <= iterations; i++ {
-			phrase_slice = append(phrase_slice, random_word(word_map, "conjunction"))
-			phrase_slice = append(phrase_slice, generate_fragment(word_map, MAGIC_FRAGMENT_LENGTH)...)
+			phrase_slice = append(phrase_slice, random_word(word_map, "conjunction", options))
+			phrase_slice = append(phrase_slice, generate_fragment(word_map, MAGIC_FRAGMENT_LENGTH, options)...)
 		}
 	}
 	return phrase_slice
@@ -97,12 +122,27 @@ func GeneratePassphrases(word_map map[string][]string, options GenerateOptions) 
 	// Merge truncated slice back into string
 	// Return slice of strings (final random passphrases)
 	passphrases := make([]string, options.count)
+
+	var sep string
+	if options.no_spaces {
+		sep = ""
+	} else {
+		sep = " "
+	}
 	for i := 0; i < options.count; i++ {
-		ps := generate_passphrase(word_map, options.length)
+		ps := generate_passphrase(word_map, options)
+		//log.Printf("ps: %v\n", ps)
 		pj := strings.Join(ps, " ")
 		ps = strings.Split(pj, " ")
 		ps = ps[:options.length+1]
-		passphrases[i] = strings.TrimSpace(strings.Join(ps, " "))
+		pp := strings.TrimSpace(strings.Join(ps, sep))
+		if options.add_digit {
+			pp += random_digit()
+		}
+		if options.add_symbol {
+			pp += random_choice(SYMBOLS)
+		}
+		passphrases[i] = pp
 	}
 	return passphrases
 }
@@ -150,6 +190,23 @@ func GenerateStatistics() map[string]word_stats {
 	}
 	statistics["ALL"] = word_stats{global_word_count, global_max_len, distribution_map["ALL"]}
 	return statistics
+}
+
+func LoadOffensiveWords() {
+	offensive = make(map[string]uint)
+
+	log.Printf("Loading offensive word list")
+	f, err := os.Open(OFFENSIVE_PATH)
+	if err != nil {
+		log.Fatalf("Error opening offensive word list: %v\n", err)
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		l := scanner.Text()
+		offensive[strings.TrimSpace(l)] = 1
+	}
 }
 
 //Load Wordnet into a mapping of word type to words of that type

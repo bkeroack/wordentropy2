@@ -52,6 +52,7 @@ func main() {
 
 	log.Printf("Loading word map")
 
+	LoadOffensiveWords()
 	word_map = LoadWordMap()
 	wordlist_stats = GenerateStatistics()
 
@@ -210,8 +211,7 @@ func Passphrases(w http.ResponseWriter, r *http.Request) {
 		emit_json_error(w, msg, 401)
 	}
 
-	log.Printf("options: %v\n", options)
-	log.Printf("passphrases\tcount=%v\tlength=%v\t%v\t%v\n", options.count, options.length, r.RemoteAddr, r.UserAgent())
+	log.Printf("passphrases\toptions:%v\t%v\t%v\n", options, r.RemoteAddr, r.UserAgent())
 
 	passphrases := GeneratePassphrases(word_map, options)
 

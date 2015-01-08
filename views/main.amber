@@ -26,8 +26,8 @@ block content
 						p Workarounds for bad password requirements:
 				div.row.row-centered
 					div.col-lg-5.col-centered
-						input[type="checkbox"][ng-model="remove_spaces"]
-						label.form-label Remove spaces
+						input[type="checkbox"][ng-model="no_spaces"]
+						label.form-label No spaces
 						input[type="checkbox"][ng-model="add_digit"]
 						label.form-label Add a number
 						input[type="checkbox"][ng-model="add_symbol"]

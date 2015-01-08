@@ -9,7 +9,7 @@ wordentropy2App.controller('PassphrasesController', function ($scope, $http, $lo
 	$scope.passphrases = [];
 	$scope.examples = [];
 	$scope.prudish = false;
-	$scope.remove_spaces = false;
+	$scope.no_spaces = false;
 	$scope.add_digit = false;
 	$scope.add_symbol = false;
 
@@ -156,7 +156,7 @@ wordentropy2App.controller('PassphrasesController', function ($scope, $http, $lo
 		var url = home + "/passphrases?length=" + encodeURIComponent($scope.length) + "&count="
 		+ encodeURIComponent($scope.count);
 
-		var options = ["prudish", "remove_spaces", "add_digit", "add_symbol"];
+		var options = ["prudish", "no_spaces", "add_digit", "add_symbol"];
 		for (var i in options) {
 			if ($scope[options[i]]) {
 				url += "&" + options[i] + "=" + "true";
