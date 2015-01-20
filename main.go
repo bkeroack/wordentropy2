@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/bkeroack/libwordentropy"
 	"github.com/eknkc/amber"
 	"html/template"
 	"log"
@@ -25,7 +26,7 @@ const (
 	URL_FILE       = "data/plot_urls.txt"
 )
 
-var word_map = map[string][]string{}
+var g *wordentropy.Generator
 var templates = map[string]*template.Template{}
 var template_name_map = map[string]string{}
 var template_names = [...]string{
@@ -52,9 +53,17 @@ func main() {
 
 	log.Printf("Loading word map")
 
-	LoadOffensiveWords()
-	word_map = LoadWordMap()
-	wordlist_stats = GenerateStatistics()
+	g, err := wordentropy.LoadGenerator(&wordentropy.WordListOptions{
+		Wordlist:  "data/part-of-speech.txt",
+		Offensive: "data/offensive.txt",
+	})
+	if err != nil {
+		log.Fatalf("Error loading wordlist: %v\n", err)
+	}
+
+	word_map := g.GetWordMap()
+
+	wordlist_stats := GenerateStatistics(word_map)
 
 	for k, v := range wordlist_stats {
 		log.Printf("Word type: %v; total_count: %v; largest_word: %v\n",
@@ -70,7 +79,7 @@ func main() {
 		generate_plots()
 	}
 
-	get_plots()
+	get_plots(word_map, wordlist_stats)
 	compile_templates()
 
 	config := &tls.Config{MinVersion: tls.VersionTLS10}
@@ -82,7 +91,7 @@ func main() {
 	http.HandleFunc("/about", About)
 	http.HandleFunc("/how-random", Random)
 	http.HandleFunc("/passphrases", Passphrases)
-	err := server.ListenAndServeTLS(TLS_CERT, TLS_KEY)
+	err = server.ListenAndServeTLS(TLS_CERT, TLS_KEY)
 	if err != nil {
 		log.Fatalf("Error starting HTTP listener: %v\n", err)
 	}
@@ -150,16 +159,14 @@ func Random(w http.ResponseWriter, r *http.Request) {
 	execute_template("random", w, r, &data)
 }
 
-func process_passphrases_options(o *GenerateOptions, qv map[string][]string) (bool, string) {
-	o.count = COUNT_DEFAULT
-	o.length = LENGTH_DEFAULT
+func process_passphrases_options(o *wordentropy.GenerateOptions, qv map[string][]string) (bool, string) {
 
 	if val, ok := qv["count"]; ok {
 		count, err := strconv.Atoi(val[0])
 		if err != nil || count < 0 || count > 99 {
 			return false, fmt.Sprintf("Bad count parameter passed: %v; %v\n", err, val[0])
 		}
-		o.count = count
+		o.Count = uint(count)
 	}
 
 	if val, ok := qv["length"]; ok {
@@ -167,27 +174,27 @@ func process_passphrases_options(o *GenerateOptions, qv map[string][]string) (bo
 		if err != nil || length < 0 || length > 99 {
 			return false, fmt.Sprintf("Bad length parameter passed: %v; %v\n", err, val[0])
 		}
-		o.length = length
+		o.Length = uint(length)
 	}
 
 	if val, ok := qv["prudish"]; ok {
 		if val[0] == "true" {
-			o.prudish = true
+			o.Prudish = true
 		}
 	}
 	if val, ok := qv["no_spaces"]; ok {
 		if val[0] == "true" {
-			o.no_spaces = true
+			o.No_spaces = true
 		}
 	}
 	if val, ok := qv["add_digit"]; ok {
 		if val[0] == "true" {
-			o.add_digit = true
+			o.Add_digit = true
 		}
 	}
 	if val, ok := qv["add_symbol"]; ok {
 		if val[0] == "true" {
-			o.add_symbol = true
+			o.Add_symbol = true
 		}
 	}
 	return true, ""
@@ -195,12 +202,12 @@ func process_passphrases_options(o *GenerateOptions, qv map[string][]string) (bo
 
 func Passphrases(w http.ResponseWriter, r *http.Request) {
 	query_values := r.URL.Query()
-	var options GenerateOptions
+	var options wordentropy.GenerateOptions
 	w.Header().Set("Content-Type", "application/json")
 
 	type passphrase_output struct {
-		Count       int
-		Length      int
+		Count       uint
+		Length      uint
 		Passphrases []string
 	}
 
@@ -213,10 +220,13 @@ func Passphrases(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("passphrases\toptions:%v\t%v\t%v\n", options, r.RemoteAddr, r.UserAgent())
 
-	passphrases := GeneratePassphrases(word_map, options)
+	passphrases, err := g.GeneratePassphrases(&options)
+	if err != nil {
+		emit_json_error(w, "Error generating passphrases", 500)
+	}
 
-	output.Count = options.count
-	output.Length = options.length
+	output.Count = options.Count
+	output.Length = options.Length
 	output.Passphrases = passphrases
 
 	//emit json

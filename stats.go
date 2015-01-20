@@ -73,7 +73,7 @@ func write_distribution_csv() {
 	}
 }
 
-func get_plots() {
+func get_plots(word_map map[string][]string, wordlist_stats map[string]word_stats) {
 	// used by view layer for plot image names and titles
 	plot_map = make(map[string]string)
 	for k, _ := range word_map {
@@ -130,4 +130,49 @@ func generate_plots() {
 	if err != nil {
 		log.Fatalf("Error generating plots: %v\n", err)
 	}
+}
+
+func GenerateStatistics(word_map map[string][]string) map[string]word_stats {
+	statistics := make(map[string]word_stats)
+	distribution_map := make(map[string]map[int]int)
+	distribution_map["ALL"] = make(map[int]int)
+
+	global_max_len := 0
+	global_word_count := 0
+	for k, val := range word_map {
+		if _, ok := distribution_map[k]; !ok {
+			distribution_map[k] = make(map[int]int)
+		}
+		stat := word_stats{len(val), 0, map[int]int{}}
+		global_word_count += len(val)
+		max_len := 0
+		for w := range val {
+			word := val[w]
+			word_len := len(word)
+			if word_len == 0 {
+				log.Printf("WARNING: found zero length word (type: %v, index: %v)\n", k, w)
+			}
+			if word_len > max_len {
+				max_len = word_len
+			}
+			if max_len > global_max_len {
+				global_max_len = max_len
+			}
+			if _, ok := distribution_map[k][word_len]; ok {
+				distribution_map[k][word_len]++
+			} else {
+				distribution_map[k][word_len] = 1
+			}
+			if _, ok := distribution_map["ALL"][word_len]; ok {
+				distribution_map["ALL"][word_len]++
+			} else {
+				distribution_map["ALL"][word_len] = 1
+			}
+		}
+		stat.Max_char_count = max_len
+		stat.Distribution_map = distribution_map[k]
+		statistics[k] = stat
+	}
+	statistics["ALL"] = word_stats{global_word_count, global_max_len, distribution_map["ALL"]}
+	return statistics
 }
