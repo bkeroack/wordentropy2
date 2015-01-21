@@ -53,7 +53,8 @@ func main() {
 
 	log.Printf("Loading word map")
 
-	g, err := wordentropy.LoadGenerator(&wordentropy.WordListOptions{
+	var err error
+	g, err = wordentropy.LoadGenerator(&wordentropy.WordListOptions{
 		Wordlist:  "data/part-of-speech.txt",
 		Offensive: "data/offensive.txt",
 	})
@@ -202,7 +203,7 @@ func process_passphrases_options(o *wordentropy.GenerateOptions, qv map[string][
 
 func Passphrases(w http.ResponseWriter, r *http.Request) {
 	query_values := r.URL.Query()
-	var options wordentropy.GenerateOptions
+	options := wordentropy.GenerateOptions{}
 	w.Header().Set("Content-Type", "application/json")
 
 	type passphrase_output struct {
