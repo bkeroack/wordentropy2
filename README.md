@@ -3,7 +3,7 @@ wordentropy2
 
 https://www.wordentropy.org
 
-Pseudo-grammatical Passphrase Generator
+Pseudo-grammatical Passphrase Generator (using [libwordentropy](https://github.com/bkeroack/libwordentropy))
 
 To run:
 
