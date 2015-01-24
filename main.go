@@ -78,9 +78,9 @@ func main() {
 		port = 4343
 	} else {
 		generate_plots()
+		get_plots(word_map, wordlist_stats)
 	}
 
-	get_plots(word_map, wordlist_stats)
 	compile_templates()
 
 	config := &tls.Config{MinVersion: tls.VersionTLS10}
