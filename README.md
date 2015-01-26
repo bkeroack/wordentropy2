@@ -10,11 +10,30 @@ To run:
 ```
 $ go get
 $ go build
-$ sudo ./wordentropy2    #requires elevated privs to bind to port 443
+$ ./wordentropy2 -local
 ```
 
-Put TLS key and certificate in a subdirectory called "tls"--application is hardcoded to look for "cert.key" and "cert-unified.pem", respectively.
+**Local mode**
 
-To generate plots via Plot.ly, put credentials in data/plotly_creds.txt (exactly two lines: username and api key). Make sure you have Python (2.7), numpy and plotly installed.
+- Does not generate plots/statistics on startup ("How Random?" page will have blank areas).
+- Compiles views on every request.
+- Binds to high, non-privileged port.
 
-To turn off plot generation, use "-local=true" when running. Missing plots will break the how-random page. This option will also cause the application to bind to port 4343, which does not require root privileges.
+**TLS (SSL)**
+
+Wordentropy requires the use of TLS (SSL). For testing purposes you can create a self-signed certificate and private key with the
+following commands:
+
+```bash
+$ cd wordentropy2
+$ mkdir ./tls && cd ./tls
+$ openssl req -x509 -newkey rsa:4096 -keyout cert.key -out cert-unified.pem -days 365 -nodes
+```
+
+Application is hardcoded to look for "tls/cert.key" and "tls/cert-unified.pem" for the private key and certificate, respectively.
+
+**Plots/Statistics**
+
+To generate plots via Plot.ly, put credentials in data/plotly_creds.txt (exactly two lines: username and api key). Make sure you have Python (2.7), numpy and plotly installed. Run wordentropy2 in production mode.
+
+
